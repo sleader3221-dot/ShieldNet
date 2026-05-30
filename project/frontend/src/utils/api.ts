@@ -18,6 +18,8 @@ interface ApiError {
   data?: any;
 }
 
+type RequestOptions = RequestInit & { signal?: AbortSignal; params?: Record<string, string> };
+
 type RequestInterceptor = (config: RequestInit & { url: string }) => RequestInit & { url: string };
 type ResponseInterceptor = (response: Response) => Response | Promise<Response>;
 
@@ -74,7 +76,7 @@ class ApiClient {
     method: string,
     path: string,
     body?: any,
-    options: RequestInit & { signal?: AbortSignal; params?: Record<string, string> } = {}
+    options: RequestOptions = {}
   ): Promise<ApiResponse<T>> {
     const token = this.getToken();
     const url = new URL(`${this.config.baseURL}${path}`, window.location.origin);
@@ -159,23 +161,23 @@ class ApiClient {
     }
   }
 
-  async get<T>(path: string, options?: RequestInit & { params?: Record<string, string> }): Promise<ApiResponse<T>> {
+  async get<T>(path: string, options?: RequestOptions): Promise<ApiResponse<T>> {
     return this.request<T>('GET', path, undefined, options);
   }
 
-  async post<T>(path: string, body?: any, options?: RequestInit): Promise<ApiResponse<T>> {
+  async post<T>(path: string, body?: any, options?: RequestOptions): Promise<ApiResponse<T>> {
     return this.request<T>('POST', path, body, options);
   }
 
-  async put<T>(path: string, body?: any, options?: RequestInit): Promise<ApiResponse<T>> {
+  async put<T>(path: string, body?: any, options?: RequestOptions): Promise<ApiResponse<T>> {
     return this.request<T>('PUT', path, body, options);
   }
 
-  async patch<T>(path: string, body?: any, options?: RequestInit): Promise<ApiResponse<T>> {
+  async patch<T>(path: string, body?: any, options?: RequestOptions): Promise<ApiResponse<T>> {
     return this.request<T>('PATCH', path, body, options);
   }
 
-  async delete<T>(path: string, options?: RequestInit): Promise<ApiResponse<T>> {
+  async delete<T>(path: string, options?: RequestOptions): Promise<ApiResponse<T>> {
     return this.request<T>('DELETE', path, undefined, options);
   }
 }

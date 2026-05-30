@@ -46,6 +46,7 @@ interface IGovernanceDAO {
     error TimelockNotCompleted();
     error EmergencyExecutionFailed();
     error AlreadyInitialized();
+    error NotAuthorized();
 
     event ProposalCreated(uint256 indexed proposalId, address indexed proposer, string title, ProposalType proposalType);
     event VoteCast(uint256 indexed proposalId, address indexed voter, bool support, uint256 votes);

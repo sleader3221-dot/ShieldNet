@@ -1,0 +1,36 @@
+version: '3.8'
+
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:8000
+    depends_on:
+      - backend
+    networks:
+      - shieldnet-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - HOST=0.0.0.0
+      - PORT=8000
+      - ENV=development
+      - DATABASE_URL=sqlite:///./shieldnet.db
+      - SECRET_KEY=shieldnet-dev-secret-key-2026
+    volumes:
+      - ./backend:/app
+    networks:
+      - shieldnet-network
+
+networks:
+  shieldnet-network:
+    driver: bridge

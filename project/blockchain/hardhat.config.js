@@ -9,15 +9,7 @@ const POLYGONSCAN_API_KEY = process.env.POLYGONSCAN_API_KEY || "";
 const INFURA_PROJECT_ID = process.env.INFURA_PROJECT_ID || "";
 const COINMARKETCAP_API_KEY = process.env.COINMARKETCAP_API_KEY || "";
 
-const path = require("path");
-
 module.exports = {
-  paths: {
-    sources: path.join(__dirname, "..", "contracts"),
-    tests: path.join(__dirname, "..", "test"),
-    artifacts: path.join(__dirname, "artifacts"),
-    cache: path.join(__dirname, "cache"),
-  },
   solidity: {
     version: "0.8.24",
     settings: {

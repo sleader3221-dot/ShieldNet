@@ -3,7 +3,7 @@ import {
   DollarSign, TrendingUp, TrendingDown, Shield, UserCheck,
   FileText, Activity, AlertTriangle, Clock, ArrowUp, ArrowDown,
   Wallet, BarChart3, PieChart, LineChart, CreditCard, Landmark,
-  Receipt, Scale, Gauge, Sparkles, Lock, CheckCircle, XCircle,
+  Receipt, Scale, Sparkles, Lock, CheckCircle, XCircle,
   HelpCircle, Eye, MoreHorizontal, Download, RefreshCw,
   type LucideIcon
 } from 'lucide-react';
@@ -170,7 +170,7 @@ export default function Fintech() {
 
         <div className="space-y-6">
           <GlassCard>
-            <SectionHeader icon={Gauge} title="Financial Health Score" color="text-accent-400" />
+            <SectionHeader icon={Activity} title="Financial Health Score" color="text-accent-400" />
             <div className="flex items-center gap-6">
               <div className="relative w-24 h-24">
                 <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">

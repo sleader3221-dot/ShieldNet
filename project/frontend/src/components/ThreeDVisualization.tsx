@@ -40,7 +40,7 @@ function generateNetworkData(): { nodes: NodeData[]; edges: EdgeData[] } {
   const contractLabels = ['Uniswap V3', 'Aave V3', 'Curve', 'Compound', 'Lido'];
 
   for (let i = 0; i < 30; i++) {
-    const type = types[Math.floor(Math.random() * types.length)];
+    const type = types[Math.floor(Math.random() * types.length)]!;
     const theta = Math.random() * Math.PI * 2;
     const phi = Math.acos(2 * Math.random() - 1);
     const radius = 3 + Math.random() * 2;
@@ -50,7 +50,7 @@ function generateNetworkData(): { nodes: NodeData[]; edges: EdgeData[] } {
       wallet: walletLabels,
       contract: contractLabels,
     };
-    const labels = labelMap[type];
+    const labels = labelMap[type]!;
     const id = `${type}-${i}`;
 
     nodes.push({
@@ -63,18 +63,22 @@ function generateNetworkData(): { nodes: NodeData[]; edges: EdgeData[] } {
       color: NODE_COLORS[type],
       size: type === 'threat' ? 0.25 + Math.random() * 0.15 : 0.2 + Math.random() * 0.1,
       type,
-      label: labels[i % labels.length],
+      label: labels[i % labels.length]!,
       intensity: type === 'threat' ? 0.5 + Math.random() * 0.5 : 0.2 + Math.random() * 0.3,
     });
   }
 
   // Create edges between nearby nodes
   for (let i = 0; i < nodes.length; i++) {
+    const ni = nodes[i];
+    if (!ni) continue;
     for (let j = i + 1; j < nodes.length; j++) {
+      const nj = nodes[j];
+      if (!nj) continue;
       if (Math.random() < 0.1) {
-        const dx = nodes[i].position[0] - nodes[j].position[0];
-        const dy = nodes[i].position[1] - nodes[j].position[1];
-        const dz = nodes[i].position[2] - nodes[j].position[2];
+        const dx = ni.position[0] - nj.position[0];
+        const dy = ni.position[1] - nj.position[1];
+        const dz = ni.position[2] - nj.position[2];
         const dist = Math.sqrt(dx * dx + dy * dy + dz * dz);
         if (dist < 3) {
           edges.push({
@@ -237,14 +241,19 @@ function Scene({ nodes, edges, hoveredNode, onHover, onClick }: {
 
       <ParticleSystem />
 
-      {edges.map((edge, idx) => (
-        <NetworkEdge
-          key={idx}
-          start={nodes[edge.source].position}
-          end={nodes[edge.target].position}
-          strength={edge.strength}
-        />
-      ))}
+      {edges.map((edge, idx) => {
+        const srcNode = nodes[edge.source];
+        const tgtNode = nodes[edge.target];
+        if (!srcNode || !tgtNode) return null;
+        return (
+          <NetworkEdge
+            key={idx}
+            start={srcNode.position}
+            end={tgtNode.position}
+            strength={edge.strength}
+          />
+        );
+      })}
 
       {nodes.map((node) => (
         <NetworkNode

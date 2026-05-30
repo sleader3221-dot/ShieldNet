@@ -67,8 +67,8 @@ export default function AlertFeed() {
       const severities: Alert['severity'][] = ['critical', 'high', 'medium', 'low'];
       const newAlert: Alert = {
         id: `alert-${Date.now()}`,
-        severity: severities[Math.floor(Math.random() * 4)],
-        title: ['Suspicious Transaction', 'Anomaly Detected', 'Security Alert', 'System Notification'][Math.floor(Math.random() * 4)],
+        severity: severities[Math.floor(Math.random() * 4)]!,
+        title: ['Suspicious Transaction', 'Anomaly Detected', 'Security Alert', 'System Notification'][Math.floor(Math.random() * 4)]!,
         description: 'Automated detection triggered by AI monitoring system.',
         timestamp: new Date(),
         isRead: false,

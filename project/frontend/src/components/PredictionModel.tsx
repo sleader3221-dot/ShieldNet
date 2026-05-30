@@ -74,7 +74,8 @@ const featureImportanceData: Record<string, FeatureImportance[]> = {
 };
 
 export default function PredictionModel() {
-  const [selectedModel, setSelectedModel] = useState(models[0]);
+  const defaultModel: ModelOption = { id: 'xgboost', name: 'XGBoost Classifier', description: 'Gradient boosted decision trees for threat detection', metrics: { accuracy: 0.967, precision: 0.954, recall: 0.971, f1: 0.962 } };
+  const [selectedModel, setSelectedModel] = useState<ModelOption>(models[0] ?? defaultModel);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isPredicting, setIsPredicting] = useState(false);
   const [predictionResult, setPredictionResult] = useState<{
@@ -91,7 +92,7 @@ export default function PredictionModel() {
     contractInteractions: '',
   });
 
-  const features = featureImportanceData[selectedModel.id];
+  const features = featureImportanceData[selectedModel.id]!;
 
   const handlePredict = async () => {
     setIsPredicting(true);

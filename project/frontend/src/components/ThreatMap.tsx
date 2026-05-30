@@ -32,11 +32,11 @@ function generateThreat(width: number, height: number, id: number): Threat {
     id: `threat-${id}`,
     x: Math.random() * (width - 60) + 30,
     y: Math.random() * (height - 60) + 30,
-    severity: severities[Math.floor(Math.random() * severities.length)],
-    label: `${attackTypes[Math.floor(Math.random() * attackTypes.length)]}`,
+    severity: severities[Math.floor(Math.random() * severities.length)]!,
+    label: attackTypes[Math.floor(Math.random() * attackTypes.length)]!,
     timestamp: new Date(Date.now() - Math.random() * 86400000).toISOString(),
-    attackType: attackTypes[Math.floor(Math.random() * attackTypes.length)],
-    target: targets[Math.floor(Math.random() * targets.length)],
+    attackType: attackTypes[Math.floor(Math.random() * attackTypes.length)]!,
+    target: targets[Math.floor(Math.random() * targets.length)]!,
     size: Math.random() * 8 + 4,
     pulsePhase: Math.random() * Math.PI * 2,
   };
@@ -109,14 +109,18 @@ export default function ThreatMap() {
       ctx.strokeStyle = 'rgba(6, 182, 212, 0.06)';
       ctx.lineWidth = 0.5;
       for (let i = 0; i < threats.length; i++) {
+        const ti = threats[i];
+        if (!ti) continue;
         for (let j = i + 1; j < threats.length; j++) {
-          const dx = threats[i].x - threats[j].x;
-          const dy = threats[i].y - threats[j].y;
+          const tj = threats[j];
+          if (!tj) continue;
+          const dx = ti.x - tj.x;
+          const dy = ti.y - tj.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
           if (dist < 150) {
             ctx.beginPath();
-            ctx.moveTo(threats[i].x, threats[i].y);
-            ctx.lineTo(threats[j].x, threats[j].y);
+            ctx.moveTo(ti.x, ti.y);
+            ctx.lineTo(tj.x, tj.y);
             ctx.stroke();
           }
         }

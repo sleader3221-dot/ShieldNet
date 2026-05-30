@@ -34,7 +34,7 @@ const suggestions = [
   { icon: Code, label: 'DeFi risk assessment' },
 ];
 
-const assistantResponses: Record<string, string> = {
+const assistantResponses = {
   default: "I'm ShieldNet's AI assistant. I can help you with threat analysis, smart contract auditing, blockchain monitoring, and DeFi risk assessment. What would you like to explore?",
   'analyze smart contract security': `## Smart Contract Security Analysis
 
@@ -115,7 +115,7 @@ export default function AIChatbot() {
     {
       id: 'welcome',
       role: 'assistant',
-      content: assistantResponses.default,
+      content: assistantResponses['default']!,
       timestamp: new Date(),
     },
   ]);
@@ -150,10 +150,10 @@ export default function AIChatbot() {
     await new Promise(r => setTimeout(r, 1000 + Math.random() * 1500));
 
     const normalized = content.trim().toLowerCase();
-    let response = assistantResponses.default;
+    let response = assistantResponses['default']!;
 
     for (const [key, value] of Object.entries(assistantResponses)) {
-      if (normalized.includes(key)) {
+      if (normalized.includes(key) && value) {
         response = value;
         break;
       }

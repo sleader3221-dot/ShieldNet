@@ -8,7 +8,7 @@ import {
   ChevronRight, ChevronDown, Menu, X, Star, Zap, ArrowRight,
   AlertTriangle, CheckCircle, Clock, ExternalLink, Play, Pause,
   Github, Twitter, Linkedin, Send, Sparkles, Hexagon, ShieldCheck,
-  Radio, Satellite, Radar, Scan, Cctv, Wind, Waves, Gauge,
+  Radio, Satellite, Radar, Scan, Cctv, Wind, Waves,
   type LucideIcon
 } from 'lucide-react';
 import { LineChart as RechartsLine, Line, AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
@@ -385,7 +385,7 @@ const LiveDemoSection = () => {
     return () => clearInterval(interval);
   }, [isPlaying]);
 
-  const getSeverityColor = (s: string) => {
+  const getSeverityColor = (s: string | undefined) => {
     switch (s) {
       case 'Critical': return 'text-danger-400 bg-danger-500/10 border-danger-500/20';
       case 'High': return 'text-warning-400 bg-warning-500/10 border-warning-500/20';
@@ -394,7 +394,7 @@ const LiveDemoSection = () => {
     }
   };
 
-  const getStatusColor = (s: string) => {
+  const getStatusColor = (s: string | undefined) => {
     switch (s) {
       case 'Blocked': return 'text-accent-400';
       case 'Investigating': return 'text-warning-400';

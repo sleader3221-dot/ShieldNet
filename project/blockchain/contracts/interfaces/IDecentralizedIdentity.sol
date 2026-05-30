@@ -31,10 +31,10 @@ interface IDecentralizedIdentity {
     error IdentityNotFound(address account);
     error IdentityAlreadyExists(address account);
     error IdentityExpired();
-    error IdentityRevoked();
+    error IdentityIsRevoked();
     error NotIdentityOwner();
     error AttestationExpired();
-    error AttestationRevoked();
+    error AttestationIsRevoked();
     error InvalidKeyRotation();
     error InvalidRecoveryConfig();
     error InsufficientGuardianConfirmations(uint256 provided, uint256 required);

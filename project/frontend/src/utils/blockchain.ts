@@ -208,7 +208,9 @@ class BlockchainService {
     try {
       const provider = this.getProvider();
       const contract = new Contract(options.contractAddress, options.abi, provider);
-      const result = await contract[options.method](...(options.args || []));
+      const args = options.args || [];
+      const method = contract[options.method] as (...args: any[]) => Promise<any>;
+      const result = await method(...args);
       return result as T;
     } catch (err: any) {
       throw new Error(err.message || 'Contract call failed.');
@@ -225,7 +227,8 @@ class BlockchainService {
         overrides.value = parseEther(options.value);
       }
 
-      const tx = await contract[options.method](...(options.args || []), overrides);
+      const method = contract[options.method] as (...args: any[]) => Promise<any>;
+      const tx = await method(...(options.args || []), overrides);
       const receipt = await tx.wait();
       return receipt as T;
     } catch (err: any) {

@@ -14,16 +14,12 @@ const nextConfig = {
         fs: false,
         net: false,
         tls: false,
-        crypto: require.resolve('crypto-browserify'),
-        stream: require.resolve('stream-browserify'),
-        buffer: require.resolve('buffer/'),
-        process: require.resolve('process/browser'),
+        crypto: false,
+        stream: false,
+        buffer: false,
+        process: false,
       };
     }
-    config.module.rules.push({
-      test: /\.(glsl|vs|fs|vert|frag)$/,
-      type: 'asset/source',
-    });
     return config;
   },
   transpilePackages: ['three'],

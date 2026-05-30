@@ -50,6 +50,7 @@ interface ICyberInsurance {
     error AlreadyInitialized();
     error InvalidDuration();
     error NotAuthorized();
+    error TransferFailed();
 
     event PolicyCreated(uint256 indexed policyId, address indexed holder, uint256 coverageAmount, uint256 premium);
     event PremiumPaid(uint256 indexed policyId, uint256 amount);

@@ -4,7 +4,7 @@ import {
   Globe, Wallet, Activity, Shield, Search, FileText, Box,
   DollarSign, Link2, Database, Cpu, ArrowUp, ArrowDown,
   ChevronDown, ExternalLink, RefreshCw, CheckCircle, AlertTriangle,
-  Clock, Gauge, Layers, Zap, Share2, Lock, Unlock, Scan,
+  Clock, Layers, Zap, Share2, Lock, Unlock, Scan,
   TrendingUp, Server, Hexagon, type LucideIcon
 } from 'lucide-react';
 import {
@@ -202,7 +202,7 @@ export default function Blockchain() {
           <button className="mt-3 text-xs text-primary-400 hover:text-primary-300 transition-colors">View All Transactions</button>
         </ServiceCard>
 
-        <ServiceCard icon={Gauge} title="Gas Price Tracker" color="text-warning-400">
+        <ServiceCard icon={Activity} title="Gas Price Tracker" color="text-warning-400">
           <div className="h-[250px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={gasHistory}>

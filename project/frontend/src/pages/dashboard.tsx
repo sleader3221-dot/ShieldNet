@@ -71,18 +71,18 @@ const threatMapDots = Array.from({ length: 40 }, () => ({
   pulse: Math.random() > 0.7,
 }));
 
-const statCards: { icon: LucideIcon; label: string; value: string; change: string; positive: boolean }[] = [
-  { icon: ShieldAlert, label: 'Total Threats Blocked', value: '12,847', change: '+12.5%', positive: true },
-  { icon: AlertTriangle, label: 'Active Threats', value: '23', change: '-8.1%', positive: true },
-  { icon: Gauge, label: 'Risk Score', value: '18/100', change: '-3.2%', positive: true },
-  { icon: CheckCircle, label: 'System Health', value: '98.7%', change: '+0.3%', positive: true },
-];
-
-const Gauge = ({ className }: { className?: string }) => (
+const GaugeIcon = ({ className }: { className?: string }) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
     <path d="m12 14 4-4" /><path d="M3.34 19a10 10 0 1 1 17.32 0" />
   </svg>
 );
+
+const statCards: { icon: LucideIcon | (({ className }: { className?: string }) => JSX.Element); label: string; value: string; change: string; positive: boolean }[] = [
+  { icon: ShieldAlert, label: 'Total Threats Blocked', value: '12,847', change: '+12.5%', positive: true },
+  { icon: AlertTriangle, label: 'Active Threats', value: '23', change: '-8.1%', positive: true },
+  { icon: GaugeIcon, label: 'Risk Score', value: '18/100', change: '-3.2%', positive: true },
+  { icon: CheckCircle, label: 'System Health', value: '98.7%', change: '+0.3%', positive: true },
+];
 
 const Sidebar = ({ open, onClose }: { open: boolean; onClose: () => void }) => (
   <>

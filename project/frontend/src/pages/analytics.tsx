@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import {
   BarChart3, TrendingUp, TrendingDown, Activity, Shield,
   Download, Calendar, Filter, RefreshCw, Eye, Brain,
-  LineChart, PieChart, Gauge, Server, Globe, Users,
+  LineChart, PieChart, Server, Globe, Users,
   Clock, DollarSign, FileText, Share2, ChevronDown,
   Sparkles, Target, Zap, ArrowUp, ArrowDown,
   type LucideIcon

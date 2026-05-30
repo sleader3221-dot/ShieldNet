@@ -46,7 +46,7 @@ contract DecentralizedIdentity is IDecentralizedIdentity, AccessControl, Reentra
     }
 
     modifier identityNotRevoked(address account) {
-        if (_identities[account].revoked) revert IdentityRevoked();
+        if (_identities[account].revoked) revert IdentityIsRevoked();
         _;
     }
 
