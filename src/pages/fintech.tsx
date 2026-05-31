@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import { motion } from 'framer-motion';
 import {
   DollarSign, TrendingUp, TrendingDown, Shield, UserCheck,
-  FileText, Activity, AlertTriangle, Clock, ArrowUp, ArrowDown,
+  FileText, Activity, AlertTriangle, Clock, ArrowLeft, ArrowUp, ArrowDown,
   Wallet, BarChart3, PieChart, LineChart, CreditCard, Landmark,
   Receipt, Scale, Sparkles, Lock, CheckCircle, XCircle,
   HelpCircle, Eye, MoreHorizontal, Download, RefreshCw,
@@ -122,7 +122,13 @@ const SectionHeader = ({ icon: Icon, title, action, onAction, color = 'text-prim
 
 export default function Fintech() {
   useAuthGuard();
+  const router = useRouter();
   const [refreshKey, setRefreshKey] = useState(0);
+
+  const refreshedPortfolio = useMemo(() => portfolioAssets.map((asset) => {
+    const change = (Math.random() * 8 - 2).toFixed(1);
+    return { ...asset, change: `${Number(change) >= 0 ? '+' : ''}${change}%`, positive: Number(change) >= 0 };
+  }), [refreshKey]);
 
   const regeneratedPaymentHistory = useMemo(() => Array.from({ length: 10 }, (_, i) => ({
     id: `PAY-${String(1000 + i)}`,
@@ -138,6 +144,9 @@ export default function Fintech() {
     <div className="min-h-screen bg-surface-darker p-4 lg:p-6 space-y-6">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-wrap items-center justify-between gap-4">
         <div>
+          <button onClick={() => router.back()} className="mb-3 text-xs text-white/30 hover:text-white/60 transition-colors flex items-center gap-1">
+            <ArrowLeft className="w-3 h-3" /> Back
+          </button>
           <h1 className="text-2xl font-bold flex items-center gap-3">
             <DollarSign className="w-6 h-6 text-accent-400" />
             Fintech Intelligence
@@ -147,7 +156,7 @@ export default function Fintech() {
         <div className="flex gap-2">
           <button onClick={() => {
   const csv = [['Asset', 'Balance', 'Value', 'Change'].join(',')];
-  portfolioAssets.forEach(a => csv.push(`"${a.name}","${a.balance}","${a.usdValue}","${a.change}"`));
+  refreshedPortfolio.forEach(a => csv.push(`"${a.name}","${a.balance}","${a.usdValue}","${a.change}"`));
   const blob = new Blob([csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a'); a.href = url; a.download = 'portfolio-export.csv'; a.click();
@@ -166,7 +175,7 @@ export default function Fintech() {
         <GlassCard>
           <SectionHeader icon={Wallet} title="Portfolio Overview" action="View All" onAction={() => toast.success('Loading all assets...')} />
           <div className="space-y-2">
-            {portfolioAssets.map((asset) => (
+            {refreshedPortfolio.map((asset) => (
               <div key={asset.name} className="flex items-center justify-between py-2.5 border-b border-white/5 last:border-0 group">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-xl glass flex items-center justify-center text-xs font-bold">

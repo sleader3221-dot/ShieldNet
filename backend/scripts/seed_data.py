@@ -7,17 +7,17 @@ from datetime import datetime, timedelta
 
 sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(__file__))))
 
-from api.auth import hash_password, fake_users_db
+from api.auth import fake_users_db
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 SEED_USERS = [
-    {"username": "admin", "email": "admin@shieldnet.io", "password": "Admin@1234", "full_name": "System Administrator", "role": "admin"},
-    {"username": "analyst", "email": "analyst@shieldnet.io", "password": "Analyst@1234", "full_name": "Security Analyst", "role": "analyst"},
-    {"username": "jdoe", "email": "john@shieldnet.io", "password": "User@1234", "full_name": "John Doe", "role": "user"},
-    {"username": "asmith", "email": "alice@shieldnet.io", "password": "User@1234", "full_name": "Alice Smith", "role": "user"},
-    {"username": "bob", "email": "bob@shieldnet.io", "password": "User@1234", "full_name": "Bob Johnson", "role": "user"},
+    {"username": "admin", "email": "admin@shieldnet.io", "password_hash": "$2b$12$ngTD9yKrN9BfL0A5QaX9euG/jgDmsi6s9EDPfOz/CgXVWjgRCwENm", "full_name": "System Administrator", "role": "admin"},
+    {"username": "analyst", "email": "analyst@shieldnet.io", "password_hash": "$2b$12$ENHtfmfZnYJ6dAr99kWx7u8AT8p7uetAkEsaW/MAQ5emb14kG64ry", "full_name": "Security Analyst", "role": "analyst"},
+    {"username": "jdoe", "email": "john@shieldnet.io", "password_hash": "$2b$12$IziecyhpNXv2CS3DT/ocX.4n944m04wS/k6bIn70y9BfgPClV1c8S", "full_name": "John Doe", "role": "user"},
+    {"username": "asmith", "email": "alice@shieldnet.io", "password_hash": "$2b$12$IziecyhpNXv2CS3DT/ocX.4n944m04wS/k6bIn70y9BfgPClV1c8S", "full_name": "Alice Smith", "role": "user"},
+    {"username": "bob", "email": "bob@shieldnet.io", "password_hash": "$2b$12$IziecyhpNXv2CS3DT/ocX.4n944m04wS/k6bIn70y9BfgPClV1c8S", "full_name": "Bob Johnson", "role": "user"},
 ]
 
 SEED_THREATS = [
@@ -74,11 +74,10 @@ def seed_database():
     logger.info("=" * 50)
 
     for user_data in SEED_USERS:
-        hashed = hash_password(user_data["password"])
         fake_users_db[user_data["username"]] = {
             "username": user_data["username"],
             "email": user_data["email"],
-            "password": hashed,
+            "password": user_data["password_hash"],
             "full_name": user_data["full_name"],
             "role": user_data["role"],
             "is_active": True,

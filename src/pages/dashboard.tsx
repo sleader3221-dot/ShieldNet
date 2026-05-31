@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import {
   Search, Bell, Wallet, ChevronDown, Menu, X, LayoutDashboard,
   Shield, Activity, BarChart3, Globe, DollarSign,
-  AlertTriangle, Clock, Zap, ArrowUp, ArrowDown,
+  AlertTriangle, Clock, Zap, ArrowLeft, ArrowUp, ArrowDown,
   ShieldAlert, Server, Network, Cpu, FileText, Settings, HelpCircle, LogOut,
   Hexagon, Play, ExternalLink, Download
 } from 'lucide-react';
@@ -133,6 +133,10 @@ export default function Dashboard() {
   const [stats, setStats] = useState<any>(null);
   const [dataLoading, setDataLoading] = useState(true);
   const [recentAlerts, setRecentAlerts] = useState<any[]>([]);
+  const [search, setSearch] = useState('');
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [accountOpen, setAccountOpen] = useState(false);
+  const [notificationsRead, setNotificationsRead] = useState(false);
 
   const fetchData = useCallback(async () => {
     try {
@@ -188,13 +192,18 @@ export default function Dashboard() {
     { icon: Server, label: 'System Health', value: '98.7%', change: '+0.3%', positive: true },
   ];
 
-  const displayAlerts = recentAlerts.length > 0 ? recentAlerts : Array.from({ length: 8 }, (_, i) => ({
+  const displayAlerts = (recentAlerts.length > 0 ? recentAlerts : Array.from({ length: 8 }, (_, i) => ({
     id: `ALERT-${1000 + i}`,
     title: ['Critical SQL Injection Attempt', 'Suspicious Wallet Drain', 'DDoS Attack Detected', 'Smart Contract Vulnerability', 'Phishing Campaign Detected', 'Ransomware Payload Blocked', 'Unusual Network Activity', 'Zero-Day Exploit Attempt'][i],
     severity: ['Critical', 'High', 'Medium', 'High', 'Critical', 'Medium', 'Low', 'Critical'][i],
     source: ['Web App', 'Ethereum', 'Network', 'BSC', 'Email', 'Endpoint', 'Polygon', 'DNS'][i],
     time: `${Math.floor(Math.random() * 60)}m ago`,
-  }));
+  }))).map((alert: any) => ({ ...alert, severity: `${alert.severity || 'Low'}`.replace(/^./, (c) => c.toUpperCase()) }));
+
+  const filteredAlerts = displayAlerts.filter((alert: any) => {
+    const q = search.toLowerCase();
+    return !q || `${alert.title || alert.description || ''} ${alert.source || ''} ${alert.severity || ''}`.toLowerCase().includes(q);
+  });
 
   useEffect(() => { if (!authLoading && !user) router.replace('/login'); }, [authLoading, user, router]);
   if (!user && authLoading) {
@@ -213,34 +222,54 @@ export default function Dashboard() {
           <div className="flex-1 flex items-center gap-4">
             <div className="relative flex-1 max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-              <input type="text" placeholder="Search threats, transactions..." className="w-full h-10 pl-10 pr-4 bg-white/5 border border-white/10 rounded-xl text-sm text-white/80 placeholder:text-white/20 focus:outline-none focus:border-primary-500/50 focus:bg-white/10 transition-all" />
+              <input value={search} onChange={(e) => setSearch(e.target.value)} type="text" placeholder="Search alerts, sources, severity..." className="w-full h-10 pl-10 pr-4 bg-white/5 border border-white/10 rounded-xl text-sm text-white/80 placeholder:text-white/20 focus:outline-none focus:border-primary-500/50 focus:bg-white/10 transition-all" />
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <button onClick={() => toast.success('No new notifications')} className="relative p-2 rounded-xl glass glass-hover">
+          <div className="flex items-center gap-3 relative">
+            <button onClick={() => { setNotificationsOpen((v) => !v); setAccountOpen(false); setNotificationsRead(true); }} className="relative p-2 rounded-xl glass glass-hover">
               <Bell className="w-4 h-4" />
-              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-danger-500 animate-ping" />
-              <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-danger-500" />
+              {!notificationsRead && <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-danger-500 animate-ping" />}
+              {!notificationsRead && <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-danger-500" />}
             </button>
-            <button onClick={() => toast.success(`Wallet: ${user?.username || 'User'}`)} className="flex items-center gap-2 px-4 py-2 rounded-xl glass glass-hover text-sm group">
+            <button onClick={() => { setAccountOpen((v) => !v); setNotificationsOpen(false); }} className="flex items-center gap-2 px-4 py-2 rounded-xl glass glass-hover text-sm group">
               <Wallet className="w-4 h-4 text-accent-400 group-hover:scale-110 transition-transform" />
               <span className="text-white/70">{user?.username || 'User'}</span>
               <ChevronDown className="w-3 h-3 text-white/30" />
             </button>
-            <div onClick={() => toast.success(`Logged in as ${user?.username || 'User'}`)} className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center text-xs font-bold cursor-pointer">
+            <button onClick={() => { setAccountOpen((v) => !v); setNotificationsOpen(false); }} className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center text-xs font-bold cursor-pointer">
               {user?.username?.charAt(0).toUpperCase() || 'U'}
-            </div>
+            </button>
+            {notificationsOpen && (
+              <div className="absolute right-36 top-12 z-50 w-80 glass rounded-2xl p-4 shadow-2xl border border-white/10">
+                <div className="flex items-center justify-between mb-3"><span className="text-sm font-semibold">Notifications</span><button onClick={() => setNotificationsOpen(false)} className="text-xs text-white/30 hover:text-white/60">Close</button></div>
+                <div className="space-y-2 max-h-80 overflow-y-auto">
+                  {displayAlerts.slice(0, 5).map((alert: any) => (<button key={alert.id} onClick={() => router.push('/threat-intelligence')} className="w-full text-left p-2 rounded-xl bg-white/5 hover:bg-white/10 transition-colors"><div className="text-xs text-white/80 truncate">{alert.title || alert.description}</div><div className="text-[10px] text-white/30 mt-0.5">{alert.severity} - {alert.source}</div></button>))}
+                </div>
+              </div>
+            )}
+            {accountOpen && (
+              <div className="absolute right-0 top-12 z-50 w-64 glass rounded-2xl p-4 shadow-2xl border border-white/10">
+                <div className="text-sm font-semibold text-white/80">{user?.full_name || user?.username || 'User'}</div>
+                <div className="text-xs text-white/30 mt-1">{user?.email || 'user@shieldnet.io'}</div>
+                <div className="mt-3 text-xs text-accent-400 uppercase tracking-wider">{user?.role || 'user'}</div>
+                <button onClick={() => router.push('/fintech')} className="mt-4 w-full rounded-xl glass glass-hover px-3 py-2 text-xs text-left">Wallet & Portfolio</button>
+                <button onClick={logout} className="mt-2 w-full rounded-xl bg-danger-500/10 text-danger-400 px-3 py-2 text-xs text-left hover:bg-danger-500/20">Logout</button>
+              </div>
+            )}
           </div>
         </header>
 
         <main className="flex-1 overflow-y-auto p-4 lg:p-6 space-y-6">
           <div className="flex items-center justify-between">
             <div>
+              <button onClick={() => router.back()} className="mb-2 text-xs text-white/30 hover:text-white/60 transition-colors flex items-center gap-1">
+                <ArrowLeft className="w-3 h-3" /> Back
+              </button>
               <h1 className="text-2xl font-bold">Security Dashboard</h1>
               <p className="text-white/40 text-sm mt-1">Real-time security overview and monitoring</p>
             </div>
             <div className="flex gap-2">
-              <button onClick={() => exportCSV(displayAlerts, 'dashboard-alerts')} className="p-2 rounded-xl glass glass-hover" title="Export CSV">
+              <button onClick={() => exportCSV(filteredAlerts, 'dashboard-alerts')} className="p-2 rounded-xl glass glass-hover" title="Export CSV">
                 <Download className="w-4 h-4" />
               </button>
               <button onClick={() => toast.success(ws.isConnected ? 'WebSocket Connected' : 'WebSocket Disconnected')} className={`p-2 rounded-xl glass glass-hover ${ws.isConnected ? 'text-accent-400' : 'text-white/30'}`} title={ws.isConnected ? 'Connected' : 'Disconnected'}>
@@ -409,12 +438,12 @@ export default function Dashboard() {
                 <h3 className="font-semibold text-sm flex items-center gap-2">
                   <Bell className="w-4 h-4 text-warning-400" /> Recent Alerts
                 </h3>
-                <button onClick={() => exportCSV(displayAlerts, 'recent-alerts')} className="text-xs text-white/30 hover:text-white/60 transition-colors flex items-center gap-1">
+                <button onClick={() => exportCSV(filteredAlerts, 'recent-alerts')} className="text-xs text-white/30 hover:text-white/60 transition-colors flex items-center gap-1">
                   <Download className="w-3 h-3" /> Export
                 </button>
               </div>
               <div className="space-y-2">
-                {displayAlerts.map((alert: any) => (
+                {filteredAlerts.map((alert: any) => (
                   <div key={alert.id} className="flex items-center gap-3 p-3 rounded-xl glass text-xs group hover:border-primary-500/20 transition-all">
                     <div className={`shrink-0 w-2 h-2 rounded-full ${
                       alert.severity === 'Critical' ? 'bg-danger-500' : alert.severity === 'High' ? 'bg-warning-500' : alert.severity === 'Medium' ? 'bg-primary-500' : 'bg-white/30'

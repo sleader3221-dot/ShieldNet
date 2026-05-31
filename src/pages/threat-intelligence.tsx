@@ -1,10 +1,11 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, Filter, Shield, AlertTriangle, Skull, Globe, Clock,
   ChevronDown, ExternalLink, Download, MoreHorizontal, X,
   Brain, Target, MapPin, Activity, FileText, Server, Database,
-  ArrowUp, ArrowDown, TrendingUp, Layers, Eye, ShieldOff,
+  ArrowLeft, ArrowUp, ArrowDown, TrendingUp, Layers, Eye, ShieldOff,
   type LucideIcon
 } from 'lucide-react';
 import {
@@ -69,11 +70,11 @@ const vulnDb = Array.from({ length: 8 }, (_, i) => ({
 const iocFeed = Array.from({ length: 10 }, (_, i) => ({
   type: ['IP Address', 'Domain', 'Hash', 'URL', 'Email'][Math.floor(Math.random() * 5)]!,
   value: [
-    '192.168.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}',
-    'malware-${i}.xyz',
-    '0x7d${String(Math.random()).slice(2, 10)}...',
-    'https://phishing-${i}.com/login',
-    'spam${i}@darknet.org',
+    `192.168.${Math.floor(Math.random()*255)}.${Math.floor(Math.random()*255)}`,
+    `malware-${i}.xyz`,
+    `0x7d${String(Math.random()).slice(2, 10)}...`,
+    `https://phishing-${i}.com/login`,
+    `spam${i}@darknet.org`,
   ][Math.floor(Math.random() * 5)]!,
   confidence: ['High', 'Medium', 'Low'][Math.floor(Math.random() * 3)]!,
   firstSeen: new Date(Date.now() - Math.random() * 86400000 * 7).toISOString(),
@@ -204,11 +205,17 @@ function exportCSV(data: any[], filename: string) {
 
 export default function ThreatIntelligence() {
   useAuthGuard();
+  const router = useRouter();
   const [search, setSearch] = useState('');
   const [severityFilter, setSeverityFilter] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [selectedThreat, setSelectedThreat] = useState<Threat | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [apiThreats, setApiThreats] = useState<any[]>([]);
+  const [localThreats, setLocalThreats] = useState<Threat[]>(threats);
+  const [iocItems, setIocItems] = useState(iocFeed);
+  const [showAllVulns, setShowAllVulns] = useState(false);
+  const [showFullTimeline, setShowFullTimeline] = useState(false);
 
   useEffect(() => {
     apiClient.get<any>('/threats?page=1&page_size=20')
@@ -218,25 +225,52 @@ export default function ThreatIntelligence() {
 
   const activeThreats = apiThreats.length > 0
     ? apiThreats.map((t: any) => ({
-        id: t.id, type: t.threat_type || t.type, severity: t.severity,
+        id: t.id, type: t.threat_type || t.type, severity: `${t.severity || 'Low'}`.replace(/^./, (c) => c.toUpperCase()),
         score: Math.round((t.score || 0.5) * 100), source: t.source_ip || 'Unknown',
-        target: t.target || 'N/A', status: t.status, timestamp: t.detected_at || t.timestamp,
+        target: t.target || 'N/A', status: `${t.status || 'Active'}`.replace(/^./, (c) => c.toUpperCase()), timestamp: t.detected_at || t.timestamp,
         mitreId: t.mitre_id || 'T-001', vector: t.vector || '[network:http]',
       }))
-    : threats;
+    : localThreats;
 
   const filteredThreats = activeThreats.filter((t) => {
     const matchSearch = t.id.toLowerCase().includes(search.toLowerCase()) ||
       (t.type || '').toLowerCase().includes(search.toLowerCase()) ||
       (t.source || '').toLowerCase().includes(search.toLowerCase());
     const matchSeverity = !severityFilter || t.severity === severityFilter;
-    return matchSearch && matchSeverity;
+    const matchStatus = !statusFilter || t.status === statusFilter;
+    return matchSearch && matchSeverity && matchStatus;
   });
+
+  const runScan = () => {
+    const scanned: Threat = {
+      id: `T-${Date.now().toString().slice(-6)}`,
+      type: ['SQL Injection', 'Wallet Drain', 'Bridge Exploit', 'Ransomware'][Math.floor(Math.random() * 4)]!,
+      severity: ['Critical', 'High', 'Medium'][Math.floor(Math.random() * 3)]!,
+      score: Math.floor(Math.random() * 30 + 70),
+      source: ['Dark Web', 'Blockchain', 'External Network'][Math.floor(Math.random() * 3)]!,
+      target: ['API Gateway', 'Smart Contract', 'Wallet'][Math.floor(Math.random() * 3)]!,
+      status: 'Active',
+      timestamp: new Date().toISOString(),
+      mitreId: `T${Math.floor(Math.random() * 2000 + 1000)}`,
+      vector: '[network:http]',
+    };
+    toast.loading('Scanning live telemetry...');
+    setTimeout(() => {
+      toast.dismiss();
+      setApiThreats([]);
+      setLocalThreats((prev) => [scanned, ...prev]);
+      setSelectedThreat(scanned);
+      toast.success(`Scan complete: ${scanned.severity} ${scanned.type} found`);
+    }, 900);
+  };
 
   return (
     <div className="min-h-screen bg-surface-darker p-4 lg:p-6 space-y-6">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-wrap items-center justify-between gap-4">
         <div>
+          <button onClick={() => router.back()} className="mb-3 text-xs text-white/30 hover:text-white/60 transition-colors flex items-center gap-1">
+            <ArrowLeft className="w-3 h-3" /> Back
+          </button>
           <h1 className="text-2xl font-bold flex items-center gap-3">
             <Shield className="w-6 h-6 text-danger-400" />
             Threat Intelligence
@@ -247,7 +281,7 @@ export default function ThreatIntelligence() {
           <button onClick={() => exportCSV(filteredThreats, 'threats-export')} className="px-4 py-2 rounded-xl glass glass-hover text-sm flex items-center gap-2">
             <Download className="w-4 h-4" /> Export
           </button>
-          <button onClick={() => { toast.loading('Scanning...'); setTimeout(() => { toast.dismiss(); toast.success('Scan complete: 0 threats found'); }, 2000); }} className="px-4 py-2 rounded-xl bg-danger-500/20 text-danger-400 border border-danger-500/20 text-sm flex items-center gap-2 hover:bg-danger-500/30 transition-colors">
+          <button onClick={runScan} className="px-4 py-2 rounded-xl bg-danger-500/20 text-danger-400 border border-danger-500/20 text-sm flex items-center gap-2 hover:bg-danger-500/30 transition-colors">
             <Shield className="w-4 h-4" /> Run Scan
           </button>
         </div>
@@ -289,10 +323,22 @@ export default function ThreatIntelligence() {
             {s}
           </button>
         ))}
-        <button onClick={() => toast.success('Filter options expanded')} className="p-2.5 rounded-xl glass glass-hover">
+        <button onClick={() => { setSearch(''); setSeverityFilter(null); setStatusFilter(null); toast.success('Filters cleared'); }} className="p-2.5 rounded-xl glass glass-hover" title="Clear filters">
           <MoreHorizontal className="w-4 h-4" />
         </button>
       </motion.div>
+
+      {showFilters && (
+        <div className="glass rounded-2xl p-4 flex flex-wrap items-center gap-3 text-xs">
+          <span className="text-white/40">Status</span>
+          {['Active', 'Investigating', 'Mitigated', 'Blocked'].map((status) => (
+            <button key={status} onClick={() => setStatusFilter(statusFilter === status ? null : status)} className={`px-3 py-1.5 rounded-xl border transition-all ${statusFilter === status ? 'text-primary-400 border-primary-500/30 bg-primary-500/10' : 'text-white/40 border-white/10 hover:text-white/70'}`}>
+              {status}
+            </button>
+          ))}
+          <button onClick={() => { setSearch(''); setSeverityFilter(null); setStatusFilter(null); }} className="ml-auto px-3 py-1.5 rounded-xl glass glass-hover text-white/50">Reset</button>
+        </div>
+      )}
 
       <div className="grid lg:grid-cols-3 gap-6">
         <motion.div
@@ -451,10 +497,10 @@ export default function ThreatIntelligence() {
             <h3 className="font-semibold text-sm flex items-center gap-2">
               <Database className="w-4 h-4 text-warning-400" /> Vulnerability DB
             </h3>
-            <button onClick={() => toast.success('Loading all vulnerabilities...')} className="text-xs text-primary-400">View All</button>
+            <button onClick={() => setShowAllVulns((v) => !v)} className="text-xs text-primary-400">{showAllVulns ? 'Collapse' : 'View All'}</button>
           </div>
           <div className="space-y-2 max-h-[280px] overflow-y-auto">
-            {vulnDb.map((v) => (
+            {(showAllVulns ? vulnDb : vulnDb.slice(0, 5)).map((v) => (
               <div key={v.id} className="glass rounded-xl p-3 text-xs group hover:border-primary-500/20 transition-all">
                 <div className="flex items-center justify-between mb-1">
                   <span className="font-mono text-white/60">{v.id}</span>
@@ -484,10 +530,10 @@ export default function ThreatIntelligence() {
             <h3 className="font-semibold text-sm flex items-center gap-2">
               <Server className="w-4 h-4 text-accent-400" /> IOC Feed
             </h3>
-            <button onClick={() => toast.success('IOC Feed refreshed')} className="text-xs text-primary-400">Refresh</button>
+            <button onClick={() => { setIocItems((items) => items.map((ioc) => ({ ...ioc, firstSeen: new Date().toISOString() })).reverse()); toast.success('IOC Feed refreshed'); }} className="text-xs text-primary-400">Refresh</button>
           </div>
           <div className="space-y-2 max-h-[280px] overflow-y-auto">
-            {iocFeed.map((ioc, i) => (
+            {iocItems.map((ioc, i) => (
               <div key={i} className="glass rounded-xl p-3 text-xs group hover:border-accent-500/20 transition-all">
                 <div className="flex items-center justify-between mb-1">
                   <span className="text-white/40">{ioc.type}</span>
@@ -515,12 +561,12 @@ export default function ThreatIntelligence() {
           <h3 className="font-semibold text-sm flex items-center gap-2">
             <Clock className="w-4 h-4 text-primary-400" /> Threat Timeline
           </h3>
-          <button onClick={() => toast.success('Loading full threat timeline...')} className="text-xs text-primary-400">View Full History</button>
+          <button onClick={() => setShowFullTimeline((v) => !v)} className="text-xs text-primary-400">{showFullTimeline ? 'Collapse' : 'View Full History'}</button>
         </div>
         <div className="relative">
           <div className="absolute left-4 top-0 bottom-0 w-px bg-gradient-to-b from-primary-500/50 via-secondary-500/30 to-transparent" />
           <div className="space-y-4 pl-10">
-            {timelineData.map((item, i) => (
+            {(showFullTimeline ? timelineData : timelineData.slice(0, 5)).map((item, i) => (
               <motion.div
                 key={i}
                 initial={{ opacity: 0, x: -20 }}

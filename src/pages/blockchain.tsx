@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import {
   Globe, Wallet, Activity, Shield, Search, FileText, Box,
   DollarSign, Link2, Database, Cpu, ArrowUp, ArrowDown,
-  ChevronDown, ExternalLink, RefreshCw, CheckCircle, AlertTriangle,
+  ArrowLeft, ChevronDown, ExternalLink, RefreshCw, CheckCircle, AlertTriangle,
   Clock, Layers, Zap, Share2, Lock, Unlock, Scan,
   TrendingUp, Server, Hexagon, type LucideIcon
 } from 'lucide-react';
@@ -125,9 +125,15 @@ const StakingCard = ({
 
 export default function Blockchain() {
   useAuthGuard();
+  const router = useRouter();
   const [selectedNetwork, setSelectedNetwork] = useState('Ethereum');
   const [contractAddress, setContractAddress] = useState('');
-  const networkTxCount = selectedNetwork === 'Ethereum' ? mockTransactions.slice(0, 6) :
+  const [connectedWallet, setConnectedWallet] = useState<string | null>(null);
+  const [showAllTx, setShowAllTx] = useState(false);
+  const [syncVersion, setSyncVersion] = useState(0);
+  const [auditResult, setAuditResult] = useState<{ address: string; score: string; risk: string } | null>(null);
+  const selectedNetworkInfo = networks.find((net) => net.name === selectedNetwork) || networks[0]!;
+  const networkTxCount = selectedNetwork === 'Ethereum' ? mockTransactions.slice(0, showAllTx ? 12 : 6) :
     selectedNetwork === 'Polygon' ? mockTransactions.slice(2, 8) :
     selectedNetwork === 'BSC' ? mockTransactions.slice(4, 10) :
     mockTransactions.slice(0, 6);
@@ -136,11 +142,18 @@ export default function Blockchain() {
     selectedNetwork === 'BSC' ? '3.2' :
     selectedNetwork === 'Arbitrum' ? '0.25' :
     selectedNetwork === 'Optimism' ? '0.05' : '25.8';
+  const selectedGasHistory = gasHistory.map((row, i) => ({
+    hour: row.hour,
+    gas: selectedNetwork === 'Ethereum' ? row.ethereum : selectedNetwork === 'Polygon' ? row.polygon : selectedNetwork === 'BSC' ? row.bsc : Math.max(1, Math.round(Number(networkGas) + Math.sin(i * 0.6) * Number(networkGas || 1))),
+  }));
 
   return (
     <div className="min-h-screen bg-surface-darker p-4 lg:p-6 space-y-6">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-wrap items-center justify-between gap-4">
         <div>
+          <button onClick={() => router.back()} className="mb-3 text-xs text-white/30 hover:text-white/60 transition-colors flex items-center gap-1">
+            <ArrowLeft className="w-3 h-3" /> Back
+          </button>
           <h1 className="text-2xl font-bold flex items-center gap-3">
             <Hexagon className="w-6 h-6 text-primary-400" />
             Blockchain Security
@@ -148,10 +161,10 @@ export default function Blockchain() {
           <p className="text-white/40 text-sm mt-1">Multi-chain monitoring and security platform</p>
         </div>
         <div className="flex gap-2">
-          <button onClick={() => toast.success('Wallet connected successfully')} className="px-4 py-2 rounded-xl glass glass-hover text-sm flex items-center gap-2">
-            <Wallet className="w-4 h-4" /> Connect Wallet
+          <button onClick={() => { const address = `0x${Array.from({ length: 8 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}...${Array.from({ length: 4 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}`; setConnectedWallet(address); toast.success('Wallet connected successfully'); }} className="px-4 py-2 rounded-xl glass glass-hover text-sm flex items-center gap-2">
+            <Wallet className="w-4 h-4" /> {connectedWallet || 'Connect Wallet'}
           </button>
-          <button onClick={() => { toast.loading('Syncing all chains...'); setTimeout(() => { toast.dismiss(); toast.success('All chains synced'); }, 1500); }} className="px-4 py-2 rounded-xl glass glass-hover text-sm flex items-center gap-2">
+          <button onClick={() => { toast.loading('Syncing all chains...'); setTimeout(() => { setSyncVersion((v) => v + 1); toast.dismiss(); toast.success('All chains synced'); }, 900); }} className="px-4 py-2 rounded-xl glass glass-hover text-sm flex items-center gap-2">
             <RefreshCw className="w-4 h-4" /> Sync All
           </button>
         </div>
@@ -180,6 +193,13 @@ export default function Blockchain() {
             </div>
           </motion.button>
         ))}
+      </div>
+
+      <div className="glass rounded-2xl p-4 grid sm:grid-cols-4 gap-3 text-xs">
+        <div><div className="text-white/30">Selected Chain</div><div className="text-white/80 font-mono mt-1">{selectedNetwork}</div></div>
+        <div><div className="text-white/30">Latest Block</div><div className="text-white/80 font-mono mt-1">{selectedNetworkInfo.block}</div></div>
+        <div><div className="text-white/30">Gas</div><div className="text-white/80 font-mono mt-1">{networkGas} Gwei</div></div>
+        <div><div className="text-white/30">Last Sync</div><div className="text-accent-400 font-mono mt-1">#{syncVersion} Live</div></div>
       </div>
 
       <div className="grid lg:grid-cols-2 gap-6">
@@ -214,26 +234,23 @@ export default function Blockchain() {
               </tbody>
             </table>
           </div>
-          <button onClick={() => toast.success('Loading all transactions...')} className="mt-3 text-xs text-primary-400 hover:text-primary-300 transition-colors">View All Transactions</button>
+          <button onClick={() => setShowAllTx((v) => !v)} className="mt-3 text-xs text-primary-400 hover:text-primary-300 transition-colors">{showAllTx ? 'Show Recent' : 'View All Transactions'}</button>
         </ServiceCard>
 
-        <ServiceCard icon={Activity} title="Gas Price Tracker" color="text-warning-400">
+        <ServiceCard icon={Activity} title={`${selectedNetwork} Gas Price Tracker`} color="text-warning-400">
           <div className="h-[250px]">
             <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={gasHistory}>
+              <LineChart data={selectedGasHistory}>
                 <XAxis dataKey="hour" stroke="rgba(255,255,255,0.1)" tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 9 }} interval={3} />
                 <YAxis stroke="rgba(255,255,255,0.1)" tick={{ fill: 'rgba(255,255,255,0.3)', fontSize: 9 }} />
                 <Tooltip contentStyle={{ background: '#1e293b', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: '#f8fafc' }} />
-                <Line type="monotone" dataKey="ethereum" stroke="#627eea" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="polygon" stroke="#8247e5" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="bsc" stroke="#f0b90b" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="gas" stroke={selectedNetworkInfo.color} strokeWidth={2} dot={false} />
               </LineChart>
             </ResponsiveContainer>
           </div>
           <div className="flex gap-4 mt-3 text-xs text-white/30">
-            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#627eea' }} /> Ethereum</span>
-            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#8247e5' }} /> Polygon</span>
-            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: '#f0b90b' }} /> BSC</span>
+            <span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full" style={{ backgroundColor: selectedNetworkInfo.color }} /> {selectedNetwork}</span>
+            <span>Graph updates when a chain is selected</span>
           </div>
         </ServiceCard>
       </div>
@@ -251,11 +268,12 @@ export default function Blockchain() {
             <button onClick={() => {
               if (!contractAddress) { toast.error('Please enter a contract address'); return; }
               toast.loading('Auditing contract...');
-              setTimeout(() => { toast.dismiss(); toast.success('Audit complete - No critical vulnerabilities found'); }, 2000);
+              setTimeout(() => { setAuditResult({ address: contractAddress, score: 'A-', risk: 'Low' }); toast.dismiss(); toast.success('Audit complete - No critical vulnerabilities found'); }, 900);
             }} className="px-4 h-10 rounded-xl bg-danger-500/20 text-danger-400 border border-danger-500/20 text-sm font-medium flex items-center gap-2 hover:bg-danger-500/30 transition-colors shrink-0">
               <Scan className="w-4 h-4" /> Audit
             </button>
           </div>
+          {auditResult && <div className="mb-4 rounded-xl glass p-3 text-xs flex flex-wrap items-center gap-4"><span className="text-white/40">Audit:</span><span className="font-mono text-white/70">{auditResult.address.slice(0, 12)}...</span><span className="text-accent-400">Score {auditResult.score}</span><span className="text-accent-400">Risk {auditResult.risk}</span></div>}
           <div className="grid grid-cols-2 gap-3 text-xs">
             {[
               { label: 'Reentrancy', score: 'A', color: 'text-accent-400' },

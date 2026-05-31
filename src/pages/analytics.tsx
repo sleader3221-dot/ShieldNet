@@ -1,11 +1,12 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useRouter } from 'next/router';
 import { motion } from 'framer-motion';
 import {
   BarChart3, TrendingUp, TrendingDown, Activity, Shield,
   Download, Calendar, Filter, RefreshCw, Eye, Brain,
   LineChart, PieChart, Server, Globe, Users,
   Clock, DollarSign, FileText, Share2, ChevronDown,
-  Sparkles, Target, Zap, ArrowUp, ArrowDown,
+  Sparkles, Target, Zap, ArrowLeft, ArrowUp, ArrowDown,
   type LucideIcon
 } from 'lucide-react';
 import { useAuthGuard } from '@/hooks/useAuth';
@@ -124,6 +125,7 @@ function exportCSV(data: any[], filename: string) {
 
 export default function Analytics() {
   useAuthGuard();
+  const router = useRouter();
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
   const [predictions, setPredictions] = useState<any[]>([]);
 
@@ -132,6 +134,11 @@ export default function Analytics() {
   const securityScoreData = useMemo(() => generateSecurityScoreData(nPoints), [nPoints]);
   const networkPatternData = useMemo(() => generateNetworkPatternData(nPoints), [nPoints]);
   const userBehaviorData = useMemo(() => generateUserBehaviorData(nPoints), [nPoints]);
+  const chartThreatTrendData = useMemo(() => {
+    if (selectedPeriod === '1y') return threatTrendData.filter((_, i) => i % 7 === 0);
+    if (selectedPeriod === '90d') return threatTrendData.filter((_, i) => i % 3 === 0);
+    return threatTrendData;
+  }, [selectedPeriod, threatTrendData]);
 
   useEffect(() => {
     apiClient.get<any>('/analytics/predictions')
@@ -143,6 +150,9 @@ export default function Analytics() {
     <div className="min-h-screen bg-surface-darker p-4 lg:p-6 space-y-6">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-wrap items-center justify-between gap-4">
         <div>
+          <button onClick={() => router.back()} className="mb-3 text-xs text-white/30 hover:text-white/60 transition-colors flex items-center gap-1">
+            <ArrowLeft className="w-3 h-3" /> Back
+          </button>
           <h1 className="text-2xl font-bold flex items-center gap-3">
             <BarChart3 className="w-6 h-6 text-secondary-400" />
             Analytics & Insights
@@ -166,7 +176,7 @@ export default function Analytics() {
           <button onClick={() => toast.success('Calendar opened')} className="p-2 rounded-xl glass glass-hover">
             <Calendar className="w-4 h-4" />
           </button>
-          <button onClick={() => exportCSV(threatTrendData, 'analytics-threat-trend')} className="px-4 py-2 rounded-xl bg-secondary-500/20 text-secondary-400 border border-secondary-500/20 text-sm flex items-center gap-2 hover:bg-secondary-500/30 transition-colors">
+          <button onClick={() => exportCSV(chartThreatTrendData, `analytics-threat-trend-${selectedPeriod}`)} className="px-4 py-2 rounded-xl bg-secondary-500/20 text-secondary-400 border border-secondary-500/20 text-sm flex items-center gap-2 hover:bg-secondary-500/30 transition-colors">
             <Download className="w-4 h-4" /> Export
           </button>
         </div>
@@ -196,7 +206,7 @@ export default function Analytics() {
           <SectionHeader icon={Activity} title="Threat Trend Analysis" action="View Full Report" onAction={() => toast.success('Opening full report...')} color="text-danger-400" />
           <div className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
-              <ComposedChart data={threatTrendData.slice(-14)}>
+              <ComposedChart data={chartThreatTrendData}>
                 <defs>
                   <linearGradient id="trendBlocked" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="0%" stopColor="#10b981" stopOpacity={0.2} />
