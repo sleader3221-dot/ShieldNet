@@ -22,7 +22,6 @@ const nextConfig = {
     }
     return config;
   },
-  transpilePackages: ['three'],
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
   },

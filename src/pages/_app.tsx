@@ -1,5 +1,5 @@
 import type { AppProps } from 'next/app';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { AnimatePresence, motion } from 'framer-motion';
 import clsx from 'clsx';
@@ -31,10 +31,14 @@ export const useAppStore = create<AppState>((set) => ({
 
 export default function App({ Component, pageProps, router }: AppProps) {
   const { theme } = useAppStore();
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
+    const root = document.documentElement;
+    root.classList.add('dark');
+    useAppStore.getState().setTheme('dark');
+  }, []);
+
+  useEffect(() => {
     const root = document.documentElement;
     if (theme === 'dark') {
       root.classList.add('dark');
@@ -43,17 +47,11 @@ export default function App({ Component, pageProps, router }: AppProps) {
     }
   }, [theme]);
 
-  useEffect(() => {
-    const root = document.documentElement;
-    root.classList.add('dark');
-    useAppStore.getState().setTheme('dark');
-  }, []);
-
   return (
-    <div className={clsx('min-h-screen bg-surface-darker', !mounted && 'opacity-0', theme === 'light' && 'bg-gray-50')}>
+    <div className={clsx('min-h-screen bg-surface-darker', theme === 'light' && 'bg-gray-50')}>
       <AnimatePresence mode="wait">
         <motion.div
-          key={router.route}
+          key={router.asPath}
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
