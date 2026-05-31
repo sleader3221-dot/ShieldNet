@@ -7,7 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, register } = useAuth();
+  const { login, demoLogin, register } = useAuth();
   const [isRegister, setIsRegister] = useState(false);
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
@@ -42,21 +42,14 @@ export default function LoginPage() {
     admin: 'Admin@1234', analyst: 'Analyst@1234',
     jdoe: 'User@1234', asmith: 'User@1234', bob: 'User@1234',
   };
-  const handleDemoLogin = async (user: string) => {
+  const handleDemoLogin = (user: string) => {
     setError('');
-    setLoading(true);
     const pw = DEMO_PASSWORDS[user] || 'User@1234';
     setUsername(user);
     setPassword(pw);
-    try {
-      await login(user, pw);
-      toast.success('Welcome back');
-      router.push('/dashboard');
-    } catch (err: any) {
-      setError(err.message || 'Login failed');
-    } finally {
-      setLoading(false);
-    }
+    demoLogin(user);
+    toast.success('Welcome back');
+    router.push('/dashboard');
   };
 
   return (

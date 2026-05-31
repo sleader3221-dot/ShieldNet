@@ -12,6 +12,19 @@ interface AuthUser {
 }
 
 const USER_CACHE_KEY = 'shieldnet_user';
+const DEMO_USERS: Record<string, AuthUser> = {
+  admin: { id: '1', username: 'admin', email: 'admin@shieldnet.io', full_name: 'System Administrator', role: 'admin', is_active: true },
+  analyst: { id: '2', username: 'analyst', email: 'analyst@shieldnet.io', full_name: 'Security Analyst', role: 'analyst', is_active: true },
+  jdoe: { id: '3', username: 'jdoe', email: 'john@shieldnet.io', full_name: 'John Doe', role: 'user', is_active: true },
+  asmith: { id: '4', username: 'asmith', email: 'alice@shieldnet.io', full_name: 'Alice Smith', role: 'user', is_active: true },
+  bob: { id: '5', username: 'bob', email: 'bob@shieldnet.io', full_name: 'Bob Johnson', role: 'user', is_active: true },
+};
+
+function fakeToken(username: string): string {
+  const header = btoa(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
+  const payload = btoa(JSON.stringify({ sub: username, exp: Date.now() / 1000 + 86400, iat: Date.now() / 1000 }));
+  return `${header}.${payload}.demo_signature`;
+}
 
 export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -47,6 +60,15 @@ export function useAuth() {
     checkAuth();
   }, [checkAuth]);
 
+  const demoLogin = (username: string) => {
+    const demoUser = DEMO_USERS[username];
+    if (!demoUser) throw new Error('Unknown demo user');
+    const token = fakeToken(username);
+    apiClient.setToken(token);
+    localStorage.setItem(USER_CACHE_KEY, JSON.stringify(demoUser));
+    setUser(demoUser);
+  };
+
   const login = async (username: string, password: string) => {
     const res = await apiClient.post<{ access_token: string; token_type: string; expires_in: number; user: AuthUser }>(
       '/auth/login',
@@ -76,7 +98,7 @@ export function useAuth() {
     router.push('/login');
   };
 
-  return { user, loading, login, register, logout, isAuthenticated: !!user };
+  return { user, loading, login, demoLogin, register, logout, isAuthenticated: !!user };
 }
 
 export function useAuthGuard() {
