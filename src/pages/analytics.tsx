@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/router';
 import { motion } from 'framer-motion';
 import {
   BarChart3, TrendingUp, TrendingDown, Activity, Shield,
@@ -8,10 +9,13 @@ import {
   Sparkles, Target, Zap, ArrowUp, ArrowDown,
   type LucideIcon
 } from 'lucide-react';
+import { useAuthGuard } from '@/hooks/useAuth';
+import { apiClient } from '@/utils/api';
+import toast from 'react-hot-toast';
 import {
   LineChart as RechartsLine, Line, AreaChart, Area, BarChart, Bar,
   XAxis, YAxis, Tooltip, ResponsiveContainer, ComposedChart,
-  CartesianGrid, Legend, RadialBarChart, RadialBar
+  CartesianGrid, Legend, RadialBarChart, RadialBar, Cell
 } from 'recharts';
 
 const threatTrendData = Array.from({ length: 30 }, (_, i) => ({
@@ -88,8 +92,31 @@ const GlassCard = ({ children, className = '' }: { children: React.ReactNode; cl
   </motion.div>
 );
 
+function exportCSV(data: any[], filename: string) {
+  if (!data.length) return;
+  const keys = Object.keys(data[0]);
+  const csv = [keys.join(','), ...data.map(row => keys.map(k => `"${String(row[k] || '')}"`).join(','))].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `${filename}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast.success(`${filename}.csv exported`);
+}
+
 export default function Analytics() {
+  useAuthGuard();
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
+  const [predictions, setPredictions] = useState<any[]>([]);
+
+  useEffect(() => {
+    apiClient.get<any>('/analytics/predictions')
+      .then((res) => { if (Array.isArray(res.data)) setPredictions(res.data); })
+      .catch(() => {});
+  }, []);
+
+  const router = useRouter();
 
   return (
     <div className="min-h-screen bg-surface-darker p-4 lg:p-6 space-y-6">
@@ -118,7 +145,7 @@ export default function Analytics() {
           <button className="p-2 rounded-xl glass glass-hover">
             <Calendar className="w-4 h-4" />
           </button>
-          <button className="px-4 py-2 rounded-xl bg-secondary-500/20 text-secondary-400 border border-secondary-500/20 text-sm flex items-center gap-2 hover:bg-secondary-500/30 transition-colors">
+          <button onClick={() => exportCSV(threatTrendData, 'analytics-threat-trend')} className="px-4 py-2 rounded-xl bg-secondary-500/20 text-secondary-400 border border-secondary-500/20 text-sm flex items-center gap-2 hover:bg-secondary-500/30 transition-colors">
             <Download className="w-4 h-4" /> Export
           </button>
         </div>
@@ -259,7 +286,7 @@ export default function Analytics() {
                 />
                 <Bar dataKey="cost" radius={[0, 4, 4, 0]}>
                   {costAnalysisData.map((entry, i) => (
-                    <rect key={i} fill={entry.color} />
+                    <Cell key={i} fill={entry.color} />
                   ))}
                 </Bar>
               </BarChart>

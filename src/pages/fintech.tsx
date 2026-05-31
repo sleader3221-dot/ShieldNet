@@ -1,3 +1,5 @@
+import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/router';
 import { motion } from 'framer-motion';
 import {
   DollarSign, TrendingUp, TrendingDown, Shield, UserCheck,
@@ -7,6 +9,9 @@ import {
   HelpCircle, Eye, MoreHorizontal, Download, RefreshCw,
   type LucideIcon
 } from 'lucide-react';
+import { useAuthGuard } from '@/hooks/useAuth';
+import { apiClient } from '@/utils/api';
+import toast from 'react-hot-toast';
 import {
   LineChart as RechartsLine, Line, AreaChart, Area, BarChart, Bar,
   XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart as RePie, Pie, Cell
@@ -116,6 +121,7 @@ const SectionHeader = ({ icon: Icon, title, action, color = 'text-primary-400' }
 );
 
 export default function Fintech() {
+  useAuthGuard();
   return (
     <div className="min-h-screen bg-surface-darker p-4 lg:p-6 space-y-6">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-wrap items-center justify-between gap-4">

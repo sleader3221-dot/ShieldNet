@@ -321,13 +321,13 @@ const HeroSection = () => {
         transition={{ duration: 0.6, delay: 0.8 }}
         className="flex flex-wrap gap-4 justify-center"
       >
-        <button onClick={() => router.push('/dashboard')} className="group relative px-8 py-4 rounded-xl bg-gradient-to-r from-primary-500 to-secondary-500 text-white font-semibold text-lg overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-primary-500/25">
+            <button onClick={() => router.push('/login')} className="group relative px-8 py-4 rounded-xl bg-gradient-to-r from-primary-500 to-secondary-500 text-white font-semibold text-lg overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-primary-500/25">
           <span className="relative z-10 flex items-center gap-2">
             Get Started Free <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </span>
           <div className="absolute inset-0 bg-gradient-to-r from-primary-600 to-secondary-600 opacity-0 group-hover:opacity-100 transition-opacity" />
         </button>
-        <button onClick={() => router.push('/dashboard')} className="px-8 py-4 rounded-xl glass glass-hover text-white font-semibold text-lg border-white/20 hover:border-primary-500/50 transition-all duration-300 hover:scale-105 flex items-center gap-2">
+        <button onClick={() => router.push('/login')} className="px-8 py-4 rounded-xl glass glass-hover text-white font-semibold text-lg border-white/20 hover:border-primary-500/50 transition-all duration-300 hover:scale-105 flex items-center gap-2">
           <Play className="w-5 h-5" /> Watch Demo
         </button>
       </motion.div>
@@ -586,10 +586,10 @@ const CTASection = () => {
               Join 500+ enterprises already using ShieldNet to protect their digital assets
             </p>
             <div className="flex flex-wrap gap-4 justify-center">
-              <button onClick={() => router.push('/dashboard')} className="group px-8 py-4 rounded-xl bg-gradient-to-r from-primary-500 to-secondary-500 text-white font-semibold text-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-primary-500/25 flex items-center gap-2">
+              <button onClick={() => router.push('/login')} className="group px-8 py-4 rounded-xl bg-gradient-to-r from-primary-500 to-secondary-500 text-white font-semibold text-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-primary-500/25 flex items-center gap-2">
                 Start Free Trial <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
               </button>
-              <button onClick={() => router.push('/dashboard')} className="px-8 py-4 rounded-xl glass glass-hover text-white/80 font-semibold text-lg transition-all duration-300 hover:scale-105">
+              <button onClick={() => router.push('/login')} className="px-8 py-4 rounded-xl glass glass-hover text-white/80 font-semibold text-lg transition-all duration-300 hover:scale-105">
                 Talk to Sales
               </button>
             </div>
@@ -659,8 +659,8 @@ export default function LandingPage() {
             {['Platform', 'Solutions', 'Developers', 'Pricing'].map((item) => (
               <a key={item} href="#" className="text-sm text-white/50 hover:text-white transition-colors">{item}</a>
             ))}
-            <button onClick={() => router.push('/dashboard')} className="px-4 py-2 rounded-lg glass glass-hover text-sm text-white/80">Sign In</button>
-            <button onClick={() => router.push('/dashboard')} className="px-4 py-2 rounded-lg bg-gradient-to-r from-primary-500 to-secondary-500 text-white text-sm font-semibold hover:shadow-lg hover:shadow-primary-500/25 transition-all">
+            <button onClick={() => router.push('/login')} className="px-4 py-2 rounded-lg glass glass-hover text-sm text-white/80">Sign In</button>
+            <button onClick={() => router.push('/login')} className="px-4 py-2 rounded-lg bg-gradient-to-r from-primary-500 to-secondary-500 text-white text-sm font-semibold hover:shadow-lg hover:shadow-primary-500/25 transition-all">
               Get Started
             </button>
           </div>
@@ -683,8 +683,8 @@ export default function LandingPage() {
                   <a key={item} href="#" className="block text-white/50 hover:text-white py-2">{item}</a>
                 ))}
                 <hr className="border-white/5" />
-                <button onClick={() => router.push('/dashboard')} className="w-full px-4 py-2 rounded-lg glass text-sm">Sign In</button>
-                <button onClick={() => router.push('/dashboard')} className="w-full px-4 py-2 rounded-lg bg-gradient-to-r from-primary-500 to-secondary-500 text-white text-sm font-semibold">
+                <button onClick={() => router.push('/login')} className="w-full px-4 py-2 rounded-lg glass text-sm">Sign In</button>
+                <button onClick={() => router.push('/login')} className="w-full px-4 py-2 rounded-lg bg-gradient-to-r from-primary-500 to-secondary-500 text-white text-sm font-semibold">
                   Get Started
                 </button>
               </div>

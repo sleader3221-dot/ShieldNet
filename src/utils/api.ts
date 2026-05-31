@@ -42,7 +42,7 @@ class ApiClient {
     this.config = { ...defaultConfig, ...config };
   }
 
-  private getToken(): string | null {
+  getToken(): string | null {
     if (typeof window === 'undefined') return null;
     try {
       return localStorage.getItem(this.config.tokenKey);

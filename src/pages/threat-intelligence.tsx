@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, Filter, Shield, AlertTriangle, Skull, Globe, Clock,
@@ -12,6 +12,9 @@ import {
   XAxis, YAxis, Tooltip, ResponsiveContainer, RadarChart,
   PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar
 } from 'recharts';
+import { useAuthGuard } from '@/hooks/useAuth';
+import { apiClient } from '@/utils/api';
+import toast from 'react-hot-toast';
 
 type Threat = {
   id: string; type: string; severity: string; score: number;
@@ -186,16 +189,46 @@ const DetailModal = ({ threat, onClose }: { threat: Threat | null; onClose: () =
   );
 };
 
+function exportCSV(data: any[], filename: string) {
+  if (!data.length) return;
+  const keys = Object.keys(data[0]);
+  const csv = [keys.join(','), ...data.map(row => keys.map(k => `"${String(row[k] || '')}"`).join(','))].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `${filename}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  toast.success(`${filename}.csv exported`);
+}
+
 export default function ThreatIntelligence() {
+  useAuthGuard();
   const [search, setSearch] = useState('');
   const [severityFilter, setSeverityFilter] = useState<string | null>(null);
   const [selectedThreat, setSelectedThreat] = useState<Threat | null>(null);
   const [showFilters, setShowFilters] = useState(false);
+  const [apiThreats, setApiThreats] = useState<any[]>([]);
 
-  const filteredThreats = threats.filter((t) => {
+  useEffect(() => {
+    apiClient.get<any>('/threats?page=1&page_size=20')
+      .then((res) => { if (res.data?.items) setApiThreats(res.data.items); })
+      .catch(() => {});
+  }, []);
+
+  const activeThreats = apiThreats.length > 0
+    ? apiThreats.map((t: any) => ({
+        id: t.id, type: t.threat_type || t.type, severity: t.severity,
+        score: Math.round((t.score || 0.5) * 100), source: t.source_ip || 'Unknown',
+        target: t.target || 'N/A', status: t.status, timestamp: t.detected_at || t.timestamp,
+        mitreId: t.mitre_id || 'T-001', vector: t.vector || '[network:http]',
+      }))
+    : threats;
+
+  const filteredThreats = activeThreats.filter((t) => {
     const matchSearch = t.id.toLowerCase().includes(search.toLowerCase()) ||
-      t.type.toLowerCase().includes(search.toLowerCase()) ||
-      t.source.toLowerCase().includes(search.toLowerCase());
+      (t.type || '').toLowerCase().includes(search.toLowerCase()) ||
+      (t.source || '').toLowerCase().includes(search.toLowerCase());
     const matchSeverity = !severityFilter || t.severity === severityFilter;
     return matchSearch && matchSeverity;
   });
@@ -211,7 +244,7 @@ export default function ThreatIntelligence() {
           <p className="text-white/40 text-sm mt-1">AI-powered threat analysis and intelligence platform</p>
         </div>
         <div className="flex gap-2">
-          <button className="px-4 py-2 rounded-xl glass glass-hover text-sm flex items-center gap-2">
+          <button onClick={() => exportCSV(filteredThreats, 'threats-export')} className="px-4 py-2 rounded-xl glass glass-hover text-sm flex items-center gap-2">
             <Download className="w-4 h-4" /> Export
           </button>
           <button className="px-4 py-2 rounded-xl bg-danger-500/20 text-danger-400 border border-danger-500/20 text-sm flex items-center gap-2 hover:bg-danger-500/30 transition-colors">

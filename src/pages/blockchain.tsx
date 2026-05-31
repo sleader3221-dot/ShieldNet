@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useRouter } from 'next/router';
 import { motion } from 'framer-motion';
 import {
   Globe, Wallet, Activity, Shield, Search, FileText, Box,
@@ -7,6 +8,9 @@ import {
   Clock, Layers, Zap, Share2, Lock, Unlock, Scan,
   TrendingUp, Server, Hexagon, type LucideIcon
 } from 'lucide-react';
+import { useAuthGuard } from '@/hooks/useAuth';
+import { apiClient } from '@/utils/api';
+import toast from 'react-hot-toast';
 import {
   LineChart, Line, AreaChart, Area, BarChart, Bar,
   XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell
@@ -120,6 +124,7 @@ const StakingCard = ({
 );
 
 export default function Blockchain() {
+  useAuthGuard();
   const [selectedNetwork, setSelectedNetwork] = useState('Ethereum');
 
   return (
