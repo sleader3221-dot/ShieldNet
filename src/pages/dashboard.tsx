@@ -26,10 +26,10 @@ const navItems = [
 ];
 
 const quickActions = [
-  { icon: Shield, label: 'Run Scan', color: 'text-primary-400', endpoint: '/threats?page=1&page_size=5' },
-  { icon: Activity, label: 'View Alerts', color: 'text-danger-400', endpoint: '/alerts?page=1&page_size=5' },
-  { icon: Server, label: 'Network Status', color: 'text-secondary-400', endpoint: '/network/status' },
-  { icon: FileText, label: 'Risk Report', color: 'text-warning-400', endpoint: '/risk/score' },
+  { icon: Shield, label: 'Threats', color: 'text-primary-400', route: '/threat-intelligence' },
+  { icon: Activity, label: 'Alerts', color: 'text-danger-400', route: '/threat-intelligence' },
+  { icon: Server, label: 'Analytics', color: 'text-secondary-400', route: '/analytics' },
+  { icon: FileText, label: 'Reports', color: 'text-warning-400', route: '/analytics' },
 ];
 
 const Sidebar = ({ open, onClose, onLogout }: { open: boolean; onClose: () => void; onLogout: () => void }) => {
@@ -282,7 +282,7 @@ export default function Dashboard() {
                 {quickActions.map((action) => {
                   const Icon = action.icon;
                   return (
-                    <button key={action.label} onClick={() => router.push(action.endpoint)}
+                    <button key={action.label} onClick={() => router.push(action.route)}
                       className="glass rounded-xl p-4 text-center group hover:neon-glow transition-all duration-300"
                     >
                       <Icon className={`w-6 h-6 mx-auto mb-2 ${action.color} group-hover:scale-110 transition-transform`} />

@@ -38,13 +38,18 @@ export default function LoginPage() {
     }
   };
 
+  const DEMO_PASSWORDS: Record<string, string> = {
+    admin: 'Admin@1234', analyst: 'Analyst@1234',
+    jdoe: 'User@1234', asmith: 'User@1234', bob: 'User@1234',
+  };
   const handleDemoLogin = async (user: string) => {
     setError('');
     setLoading(true);
+    const pw = DEMO_PASSWORDS[user] || 'User@1234';
     setUsername(user);
-    setPassword(user === 'admin' ? 'Admin@1234' : 'User@1234');
+    setPassword(pw);
     try {
-      await login(user, user === 'admin' ? 'Admin@1234' : 'User@1234');
+      await login(user, pw);
       toast.success('Welcome back');
       router.push('/dashboard');
     } catch (err: any) {
@@ -212,14 +217,26 @@ export default function LoginPage() {
 
           <div className="mt-8 pt-6 border-t border-white/5">
             <p className="text-xs text-white/30 text-center mb-3">Demo Accounts (click to login instantly)</p>
-            <div className="grid grid-cols-2 gap-3">
-              <button onClick={() => handleDemoLogin('admin')} className="p-3 rounded-xl glass glass-hover text-sm text-left group">
-                <div className="font-medium text-white/70 group-hover:text-primary-300 transition-colors">Admin</div>
-                <div className="text-xs text-white/30 mt-0.5">Full access</div>
+            <div className="grid grid-cols-5 gap-2">
+              <button onClick={() => handleDemoLogin('admin')} className="p-2 rounded-xl glass glass-hover text-xs text-center group">
+                <div className="font-medium text-white/70 group-hover:text-primary-300 transition-colors">admin</div>
+                <div className="text-white/30 text-[10px] mt-0.5">Admin@1234</div>
               </button>
-              <button onClick={() => handleDemoLogin('analyst')} className="p-3 rounded-xl glass glass-hover text-sm text-left group">
-                <div className="font-medium text-white/70 group-hover:text-primary-300 transition-colors">Analyst</div>
-                <div className="text-xs text-white/30 mt-0.5">Read + analyze</div>
+              <button onClick={() => handleDemoLogin('analyst')} className="p-2 rounded-xl glass glass-hover text-xs text-center group">
+                <div className="font-medium text-white/70 group-hover:text-primary-300 transition-colors">analyst</div>
+                <div className="text-white/30 text-[10px] mt-0.5">Analyst@1234</div>
+              </button>
+              <button onClick={() => handleDemoLogin('jdoe')} className="p-2 rounded-xl glass glass-hover text-xs text-center group">
+                <div className="font-medium text-white/70 group-hover:text-primary-300 transition-colors">jdoe</div>
+                <div className="text-white/30 text-[10px] mt-0.5">User@1234</div>
+              </button>
+              <button onClick={() => handleDemoLogin('asmith')} className="p-2 rounded-xl glass glass-hover text-xs text-center group">
+                <div className="font-medium text-white/70 group-hover:text-primary-300 transition-colors">asmith</div>
+                <div className="text-white/30 text-[10px] mt-0.5">User@1234</div>
+              </button>
+              <button onClick={() => handleDemoLogin('bob')} className="p-2 rounded-xl glass glass-hover text-xs text-center group">
+                <div className="font-medium text-white/70 group-hover:text-primary-300 transition-colors">bob</div>
+                <div className="text-white/30 text-[10px] mt-0.5">User@1234</div>
               </button>
             </div>
           </div>

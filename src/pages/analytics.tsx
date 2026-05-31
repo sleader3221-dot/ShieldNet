@@ -1,5 +1,4 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useRouter } from 'next/router';
 import { motion } from 'framer-motion';
 import {
   BarChart3, TrendingUp, TrendingDown, Activity, Shield,
@@ -115,8 +114,6 @@ export default function Analytics() {
       .then((res) => { if (Array.isArray(res.data)) setPredictions(res.data); })
       .catch(() => {});
   }, []);
-
-  const router = useRouter();
 
   return (
     <div className="min-h-screen bg-surface-darker p-4 lg:p-6 space-y-6">
