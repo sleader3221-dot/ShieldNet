@@ -151,7 +151,10 @@ class ApiClient {
       }
       if (err.status) {
         if (err.status === 401) {
-          this.setToken(null);
+          const t = this.getToken();
+          if (!t || !t.endsWith('.demo_signature')) {
+            this.setToken(null);
+          }
         }
         throw err;
       }

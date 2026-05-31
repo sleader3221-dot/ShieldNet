@@ -49,6 +49,10 @@ export function useAuth() {
         setLoading(false);
       })
       .catch(() => {
+        const stillCached = localStorage.getItem(USER_CACHE_KEY);
+        if (stillCached) {
+          try { setUser(JSON.parse(stillCached)); setLoading(false); return; } catch {}
+        }
         apiClient.setToken(null);
         localStorage.removeItem(USER_CACHE_KEY);
         setUser(null);
