@@ -11,6 +11,8 @@ interface AuthUser {
   is_active: boolean;
 }
 
+const USER_CACHE_KEY = 'shieldnet_user';
+
 export function useAuth() {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
@@ -23,13 +25,19 @@ export function useAuth() {
       setLoading(false);
       return;
     }
+    const cached = localStorage.getItem(USER_CACHE_KEY);
+    if (cached) {
+      try { setUser(JSON.parse(cached)); setLoading(false); return; } catch {}
+    }
     apiClient.get<AuthUser>('/user/profile')
       .then((res) => {
         setUser(res.data);
+        localStorage.setItem(USER_CACHE_KEY, JSON.stringify(res.data));
         setLoading(false);
       })
       .catch(() => {
         apiClient.setToken(null);
+        localStorage.removeItem(USER_CACHE_KEY);
         setUser(null);
         setLoading(false);
       });
@@ -45,6 +53,7 @@ export function useAuth() {
       { username, password }
     );
     apiClient.setToken(res.data.access_token);
+    localStorage.setItem(USER_CACHE_KEY, JSON.stringify(res.data.user));
     setUser(res.data.user);
     return res.data;
   };
@@ -55,12 +64,14 @@ export function useAuth() {
       data
     );
     apiClient.setToken(res.data.access_token);
+    localStorage.setItem(USER_CACHE_KEY, JSON.stringify(res.data.user));
     setUser(res.data.user);
     return res.data;
   };
 
   const logout = () => {
     apiClient.setToken(null);
+    localStorage.removeItem(USER_CACHE_KEY);
     setUser(null);
     router.push('/login');
   };
