@@ -49,16 +49,8 @@ export default function App({ Component, pageProps, router }: AppProps) {
     useAppStore.getState().setTheme('dark');
   }, []);
 
-  if (!mounted) {
-    return (
-      <div className="min-h-screen bg-surface-darker flex items-center justify-center">
-        <div className="loading-spinner w-8 h-8" />
-      </div>
-    );
-  }
-
   return (
-    <div className={clsx('min-h-screen bg-surface-darker', theme === 'light' && 'bg-gray-50')}>
+    <div className={clsx('min-h-screen bg-surface-darker', !mounted && 'opacity-0', theme === 'light' && 'bg-gray-50')}>
       <AnimatePresence mode="wait">
         <motion.div
           key={router.route}

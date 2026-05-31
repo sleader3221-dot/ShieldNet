@@ -384,6 +384,76 @@ async def get_predictions(current_user: dict = Depends(get_current_user)):
     return predictions
 
 
+# --- Analysis endpoints matching frontend useAIAnalysis hook ---
+
+@router.get("/analysis/threat/{threat_id}", tags=["Analysis"])
+@rate_limit(max_calls=60, window_seconds=60)
+async def get_threat_analysis(threat_id: str, request: Request, current_user: dict = Depends(get_current_user)):
+    ensure_seeded()
+    threat = None
+    for t in seeded_threats:
+        if t["id"] == threat_id:
+            threat = t
+            break
+    if not threat:
+        raise HTTPException(status_code=404, detail="Threat not found")
+    ml_result = threat_detection_ml.predict_threat_score(threat)
+    return {
+        "id": threat["id"],
+        "type": threat["threat_type"],
+        "severity": threat["severity"],
+        "confidence": ml_result.get("confidence", 0.85),
+        "description": threat["description"],
+        "source": threat["source_ip"],
+        "timestamp": threat["detected_at"],
+        "metadata": {"ml_score": threat["score"], "indicators": threat.get("indicators", [])},
+    }
+
+
+@router.post("/analysis/predict", tags=["Analysis"])
+@rate_limit(max_calls=30, window_seconds=60)
+async def predict_analysis(params: dict = {}, request: Request = None, current_user: dict = Depends(get_current_user)):
+    risk_pred = risk_scoring_ml.calculate_risk({
+        "tx_volume": params.get("tx_volume", 50000),
+        "tx_frequency": params.get("tx_frequency", 15),
+        "avg_tx_value": params.get("avg_tx_value", 5000),
+        "account_age_days": params.get("account_age_days", 120),
+        "unique_counterparties": params.get("unique_counterparties", 25),
+        "failed_tx_ratio": params.get("failed_tx_ratio", 0.1),
+        "high_risk_interactions": params.get("high_risk_interactions", 3),
+        "portfolio_value": params.get("portfolio_value", 250000),
+        "leverage_ratio": params.get("leverage_ratio", 1.5),
+        "cross_border_tx": params.get("cross_border_tx", 1),
+    })
+    return {
+        "prediction": risk_pred.get("risk_level", "medium"),
+        "probability": 1.0 - risk_pred.get("risk_score", 0.5),
+        "factors": [{"name": k, "weight": v} for k, v in risk_pred.get("factors", {}).items()],
+        "timestamp": datetime.utcnow().isoformat(),
+    }
+
+
+@router.get("/analysis/threats/recent", response_model=List[dict], tags=["Analysis"])
+@rate_limit(max_calls=60, window_seconds=60)
+async def get_recent_threats(limit: int = Query(20, ge=1, le=100), request: Request = None, current_user: dict = Depends(get_current_user)):
+    ensure_seeded()
+    threats = sorted(seeded_threats, key=lambda t: t["detected_at"], reverse=True)[:limit]
+    result = []
+    for t in threats:
+        ml_result = threat_detection_ml.predict_threat_score(t)
+        result.append({
+            "id": t["id"],
+            "type": t["threat_type"],
+            "severity": t["severity"],
+            "confidence": ml_result.get("confidence", 0.85),
+            "description": t["description"],
+            "source": t["source_ip"],
+            "timestamp": t["detected_at"],
+            "metadata": {"ml_score": t["score"]},
+        })
+    return result
+
+
 @router.get("/alerts", response_model=PaginatedResponse, tags=["Alerts"])
 async def get_alerts(
     page: int = Query(1, ge=1),
@@ -498,7 +568,7 @@ async def login(login_data: UserLogin):
         token_type="bearer",
         expires_in=3600,
         user=User(
-            id=hash(username) % 1000000,
+            id=str(hash(username) % 1000000),
             username=username,
             email=user["email"],
             full_name=user.get("full_name", ""),
@@ -537,7 +607,7 @@ async def register(register_data: UserCreate):
         token_type="bearer",
         expires_in=3600,
         user=User(
-            id=hash(register_data.username) % 1000000,
+            id=str(hash(register_data.username) % 1000000),
             username=register_data.username,
             email=register_data.email,
             full_name=register_data.full_name,
@@ -550,7 +620,7 @@ async def register(register_data: UserCreate):
 @router.get("/user/profile", response_model=User, tags=["User"])
 async def get_user_profile(current_user: dict = Depends(get_current_user)):
     return User(
-        id=hash(current_user.get("username", "")) % 1000000,
+        id=str(hash(current_user.get("username", "")) % 1000000),
         username=current_user.get("username", ""),
         email=current_user.get("email", ""),
         full_name=current_user.get("full_name", ""),

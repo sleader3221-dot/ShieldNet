@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useRouter } from 'next/router';
 import { motion, useScroll, useTransform, AnimatePresence } from 'framer-motion';
 import {
   Shield, ShieldOff, Network, Brain, Cpu, Lock, FileSearch, Fingerprint,
@@ -265,14 +266,16 @@ const FeatureCard = ({ feature, index }: { feature: FeatureCard; index: number }
   );
 };
 
-const HeroSection = () => (
-  <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
-    <div className="absolute inset-0 bg-grid-glow" />
-    <ParticleNetwork />
-    <div className="absolute inset-0 bg-gradient-to-b from-transparent via-surface-darker/50 to-surface-darker" />
+const HeroSection = () => {
+  const router = useRouter();
+  return (
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
+      <div className="absolute inset-0 bg-grid-glow" />
+      <ParticleNetwork />
+      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-surface-darker/50 to-surface-darker" />
 
-    <div className="relative z-10 max-w-6xl mx-auto px-4 text-center">
-      <motion.div
+      <div className="relative z-10 max-w-6xl mx-auto px-4 text-center">
+        <motion.div
         initial={{ opacity: 0, scale: 0.8 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.8 }}
@@ -318,13 +321,13 @@ const HeroSection = () => (
         transition={{ duration: 0.6, delay: 0.8 }}
         className="flex flex-wrap gap-4 justify-center"
       >
-        <button className="group relative px-8 py-4 rounded-xl bg-gradient-to-r from-primary-500 to-secondary-500 text-white font-semibold text-lg overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-primary-500/25">
+        <button onClick={() => router.push('/dashboard')} className="group relative px-8 py-4 rounded-xl bg-gradient-to-r from-primary-500 to-secondary-500 text-white font-semibold text-lg overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-primary-500/25">
           <span className="relative z-10 flex items-center gap-2">
             Get Started Free <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </span>
           <div className="absolute inset-0 bg-gradient-to-r from-primary-600 to-secondary-600 opacity-0 group-hover:opacity-100 transition-opacity" />
         </button>
-        <button className="px-8 py-4 rounded-xl glass glass-hover text-white font-semibold text-lg border-white/20 hover:border-primary-500/50 transition-all duration-300 hover:scale-105 flex items-center gap-2">
+        <button onClick={() => router.push('/dashboard')} className="px-8 py-4 rounded-xl glass glass-hover text-white font-semibold text-lg border-white/20 hover:border-primary-500/50 transition-all duration-300 hover:scale-105 flex items-center gap-2">
           <Play className="w-5 h-5" /> Watch Demo
         </button>
       </motion.div>
@@ -349,8 +352,9 @@ const HeroSection = () => (
         <ChevronDown className="w-6 h-6 text-white/20 animate-bounce" />
       </motion.div>
     </div>
-  </section>
-);
+    </section>
+  );
+};
 
 const StatsSection = () => (
   <section className="py-20 relative">
@@ -562,36 +566,39 @@ const TrustedBySection = () => (
   </section>
 );
 
-const CTASection = () => (
-  <section className="py-20 relative">
-    <div className="max-w-4xl mx-auto px-4 text-center">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        whileInView={{ opacity: 1, scale: 1 }}
-        viewport={{ once: true }}
-        className="glass rounded-3xl p-12 md:p-16 relative overflow-hidden"
-      >
-        <div className="absolute inset-0 bg-gradient-to-br from-primary-500/10 via-secondary-500/5 to-accent-500/10" />
-        <div className="relative z-10">
-          <h2 className="text-3xl md:text-5xl font-bold mb-4">
-            Ready to Secure Your <span className="gradient-text">Future</span>?
-          </h2>
-          <p className="text-white/50 mb-8 max-w-xl mx-auto">
-            Join 500+ enterprises already using ShieldNet to protect their digital assets
-          </p>
-          <div className="flex flex-wrap gap-4 justify-center">
-            <button className="group px-8 py-4 rounded-xl bg-gradient-to-r from-primary-500 to-secondary-500 text-white font-semibold text-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-primary-500/25 flex items-center gap-2">
-              Start Free Trial <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </button>
-            <button className="px-8 py-4 rounded-xl glass glass-hover text-white/80 font-semibold text-lg transition-all duration-300 hover:scale-105">
-              Talk to Sales
-            </button>
+const CTASection = () => {
+  const router = useRouter();
+  return (
+    <section className="py-20 relative">
+      <div className="max-w-4xl mx-auto px-4 text-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          className="glass rounded-3xl p-12 md:p-16 relative overflow-hidden"
+        >
+          <div className="absolute inset-0 bg-gradient-to-br from-primary-500/10 via-secondary-500/5 to-accent-500/10" />
+          <div className="relative z-10">
+            <h2 className="text-3xl md:text-5xl font-bold mb-4">
+              Ready to Secure Your <span className="gradient-text">Future</span>?
+            </h2>
+            <p className="text-white/50 mb-8 max-w-xl mx-auto">
+              Join 500+ enterprises already using ShieldNet to protect their digital assets
+            </p>
+            <div className="flex flex-wrap gap-4 justify-center">
+              <button onClick={() => router.push('/dashboard')} className="group px-8 py-4 rounded-xl bg-gradient-to-r from-primary-500 to-secondary-500 text-white font-semibold text-lg transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-primary-500/25 flex items-center gap-2">
+                Start Free Trial <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </button>
+              <button onClick={() => router.push('/dashboard')} className="px-8 py-4 rounded-xl glass glass-hover text-white/80 font-semibold text-lg transition-all duration-300 hover:scale-105">
+                Talk to Sales
+              </button>
+            </div>
           </div>
-        </div>
-      </motion.div>
-    </div>
-  </section>
-);
+        </motion.div>
+      </div>
+    </section>
+  );
+};
 
 const Footer = () => (
   <footer className="py-12 border-t border-white/5">
@@ -637,12 +644,13 @@ const Footer = () => (
 
 export default function LandingPage() {
   const [mobileMenu, setMobileMenu] = useState(false);
+  const router = useRouter();
 
   return (
     <div className="min-h-screen bg-surface-darker overflow-hidden">
       <nav className="fixed top-0 left-0 right-0 z-50 bg-surface-darker/80 backdrop-blur-xl border-b border-white/5">
         <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 cursor-pointer" onClick={() => router.push('/')}>
             <Hexagon className="w-7 h-7 text-primary-400" />
             <span className="text-xl font-bold gradient-text">ShieldNet</span>
           </div>
@@ -651,8 +659,8 @@ export default function LandingPage() {
             {['Platform', 'Solutions', 'Developers', 'Pricing'].map((item) => (
               <a key={item} href="#" className="text-sm text-white/50 hover:text-white transition-colors">{item}</a>
             ))}
-            <button className="px-4 py-2 rounded-lg glass glass-hover text-sm text-white/80">Sign In</button>
-            <button className="px-4 py-2 rounded-lg bg-gradient-to-r from-primary-500 to-secondary-500 text-white text-sm font-semibold hover:shadow-lg hover:shadow-primary-500/25 transition-all">
+            <button onClick={() => router.push('/dashboard')} className="px-4 py-2 rounded-lg glass glass-hover text-sm text-white/80">Sign In</button>
+            <button onClick={() => router.push('/dashboard')} className="px-4 py-2 rounded-lg bg-gradient-to-r from-primary-500 to-secondary-500 text-white text-sm font-semibold hover:shadow-lg hover:shadow-primary-500/25 transition-all">
               Get Started
             </button>
           </div>
@@ -675,8 +683,8 @@ export default function LandingPage() {
                   <a key={item} href="#" className="block text-white/50 hover:text-white py-2">{item}</a>
                 ))}
                 <hr className="border-white/5" />
-                <button className="w-full px-4 py-2 rounded-lg glass text-sm">Sign In</button>
-                <button className="w-full px-4 py-2 rounded-lg bg-gradient-to-r from-primary-500 to-secondary-500 text-white text-sm font-semibold">
+                <button onClick={() => router.push('/dashboard')} className="w-full px-4 py-2 rounded-lg glass text-sm">Sign In</button>
+                <button onClick={() => router.push('/dashboard')} className="w-full px-4 py-2 rounded-lg bg-gradient-to-r from-primary-500 to-secondary-500 text-white text-sm font-semibold">
                   Get Started
                 </button>
               </div>

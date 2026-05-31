@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useRouter } from 'next/router';
 import { motion } from 'framer-motion';
 import {
   Search, Bell, Wallet, ChevronDown, Menu, X, LayoutDashboard,
@@ -14,15 +15,15 @@ import {
   XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell
 } from 'recharts';
 
-const navItems: { icon: LucideIcon; label: string; active?: boolean }[] = [
-  { icon: LayoutDashboard, label: 'Dashboard', active: true },
-  { icon: Shield, label: 'Threat Intelligence' },
-  { icon: Globe, label: 'Blockchain' },
-  { icon: DollarSign, label: 'Fintech' },
-  { icon: BarChart3, label: 'Analytics' },
-  { icon: Activity, label: 'Monitor' },
-  { icon: FileText, label: 'Reports' },
-  { icon: Settings, label: 'Settings' },
+const navItems: { icon: LucideIcon; label: string; path: string; active?: boolean }[] = [
+  { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard', active: true },
+  { icon: Shield, label: 'Threat Intelligence', path: '/threat-intelligence' },
+  { icon: Globe, label: 'Blockchain', path: '/blockchain' },
+  { icon: DollarSign, label: 'Fintech', path: '/fintech' },
+  { icon: BarChart3, label: 'Analytics', path: '/analytics' },
+  { icon: Activity, label: 'Monitor', path: '/dashboard' },
+  { icon: FileText, label: 'Reports', path: '/analytics' },
+  { icon: Settings, label: 'Settings', path: '/dashboard' },
 ];
 
 const quickActions = [
@@ -84,50 +85,54 @@ const statCards: { icon: LucideIcon | (({ className }: { className?: string }) =
   { icon: CheckCircle, label: 'System Health', value: '98.7%', change: '+0.3%', positive: true },
 ];
 
-const Sidebar = ({ open, onClose }: { open: boolean; onClose: () => void }) => (
-  <>
-    <motion.aside
-      initial={{ x: -300 }}
-      animate={{ x: 0 }}
-      className={`fixed lg:static inset-y-0 left-0 z-40 w-64 bg-surface-dark/95 backdrop-blur-xl border-r border-white/5 flex flex-col ${open ? 'block' : 'hidden lg:flex'}`}
-    >
-      <div className="p-4 border-b border-white/5 flex items-center gap-3">
-        <Hexagon className="w-8 h-8 text-primary-400" />
-        <div>
-          <div className="font-bold gradient-text">ShieldNet</div>
-          <div className="text-xs text-white/30">Security Dashboard</div>
+const Sidebar = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
+  const router = useRouter();
+  return (
+    <>
+      <motion.aside
+        initial={{ x: -300 }}
+        animate={{ x: 0 }}
+        className={`fixed lg:static inset-y-0 left-0 z-40 w-64 bg-surface-dark/95 backdrop-blur-xl border-r border-white/5 flex flex-col ${open ? 'block' : 'hidden lg:flex'}`}
+      >
+        <div className="p-4 border-b border-white/5 flex items-center gap-3 cursor-pointer" onClick={() => router.push('/dashboard')}>
+          <Hexagon className="w-8 h-8 text-primary-400" />
+          <div>
+            <div className="font-bold gradient-text">ShieldNet</div>
+            <div className="text-xs text-white/30">Security Dashboard</div>
+          </div>
         </div>
-      </div>
 
-      <nav className="flex-1 p-3 space-y-1">
-        {navItems.map((item) => (
-          <button
-            key={item.label}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
-              item.active
-                ? 'bg-primary-500/10 text-primary-400 border border-primary-500/20'
-                : 'text-white/40 hover:text-white/70 hover:bg-white/5'
-            }`}
-          >
-            <item.icon className="w-4 h-4 shrink-0" />
-            <span>{item.label}</span>
-          </button>
-        ))}
-      </nav>
+        <nav className="flex-1 p-3 space-y-1">
+          {navItems.map((item) => (
+            <button
+              key={item.label}
+              onClick={() => { router.push(item.path); onClose(); }}
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
+                router.pathname === item.path
+                  ? 'bg-primary-500/10 text-primary-400 border border-primary-500/20'
+                  : 'text-white/40 hover:text-white/70 hover:bg-white/5'
+              }`}
+            >
+              <item.icon className="w-4 h-4 shrink-0" />
+              <span>{item.label}</span>
+            </button>
+          ))}
+        </nav>
 
-      <div className="p-3 border-t border-white/5 space-y-1">
-        {[{ icon: HelpCircle, label: 'Help' }, { icon: Settings, label: 'Settings' }, { icon: LogOut, label: 'Logout' }].map((item) => (
-          <button key={item.label} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/40 hover:text-white/70 hover:bg-white/5 transition-all">
-            <item.icon className="w-4 h-4 shrink-0" />
-            <span>{item.label}</span>
-          </button>
-        ))}
-      </div>
-    </motion.aside>
+        <div className="p-3 border-t border-white/5 space-y-1">
+          {[{ icon: HelpCircle, label: 'Help' }, { icon: Settings, label: 'Settings' }, { icon: LogOut, label: 'Logout' }].map((item) => (
+            <button key={item.label} className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm text-white/40 hover:text-white/70 hover:bg-white/5 transition-all">
+              <item.icon className="w-4 h-4 shrink-0" />
+              <span>{item.label}</span>
+            </button>
+          ))}
+        </div>
+      </motion.aside>
 
-    {open && <div className="fixed inset-0 bg-black/50 z-30 lg:hidden" onClick={onClose} />}
-  </>
-);
+      {open && <div className="fixed inset-0 bg-black/50 z-30 lg:hidden" onClick={onClose} />}
+    </>
+  );
+};
 
 const ThreatMap = () => (
   <div className="glass rounded-2xl p-6 relative overflow-hidden h-[300px]">
