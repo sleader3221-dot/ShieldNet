@@ -24,7 +24,7 @@ type RequestInterceptor = (config: RequestInit & { url: string }) => RequestInit
 type ResponseInterceptor = (response: Response) => Response | Promise<Response>;
 
 const defaultConfig: ApiConfig = {
-  baseURL: process.env.NEXT_PUBLIC_API_URL || '/api',
+  baseURL: process.env.NEXT_PUBLIC_API_URL || '/api/v1',
   timeout: 30000,
   headers: {
     'Content-Type': 'application/json',

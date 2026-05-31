@@ -49,15 +49,34 @@ async def lifespan(app: FastAPI):
     from ml.fraud_detection import fraud_detection_ml
     from ml.nlp_threat_intel import nlp_threat_intel
 
+    ml_models = [
+        ("Threat Detection", threat_detection_ml),
+        ("Risk Scoring", risk_scoring_ml),
+        ("Fraud Detection", fraud_detection_ml),
+    ]
+
+    for name, model in ml_models:
+        try:
+            if model._load_models():
+                logger.info(f"{name} models loaded from disk")
+            else:
+                logger.info(f"Training {name} models...")
+                model.train()
+                logger.info(f"{name} models trained successfully")
+        except Exception as e:
+            logger.info(f"Training {name} models...")
+            try:
+                model.train()
+                logger.info(f"{name} models trained successfully")
+            except Exception as e2:
+                logger.error(f"{name} model setup failed: {e2}")
+
     try:
-        logger.info("Training ML models...")
-        threat_detection_ml.train()
-        risk_scoring_ml.train()
-        fraud_detection_ml.train()
+        logger.info("Initializing NLP threat intelligence...")
         nlp_threat_intel.train()
-        logger.info("All ML models trained successfully")
+        logger.info("NLP threat intelligence initialized")
     except Exception as e:
-        logger.error(f"ML model training failed: {e}")
+        logger.error(f"NLP threat intel setup failed: {e}")
 
     logger.info("ShieldNet API is ready")
     yield
