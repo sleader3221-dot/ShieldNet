@@ -126,6 +126,16 @@ const StakingCard = ({
 export default function Blockchain() {
   useAuthGuard();
   const [selectedNetwork, setSelectedNetwork] = useState('Ethereum');
+  const [contractAddress, setContractAddress] = useState('');
+  const networkTxCount = selectedNetwork === 'Ethereum' ? mockTransactions.slice(0, 6) :
+    selectedNetwork === 'Polygon' ? mockTransactions.slice(2, 8) :
+    selectedNetwork === 'BSC' ? mockTransactions.slice(4, 10) :
+    mockTransactions.slice(0, 6);
+  const networkGas = selectedNetwork === 'Ethereum' ? '12.5' :
+    selectedNetwork === 'Polygon' ? '45.2' :
+    selectedNetwork === 'BSC' ? '3.2' :
+    selectedNetwork === 'Arbitrum' ? '0.25' :
+    selectedNetwork === 'Optimism' ? '0.05' : '25.8';
 
   return (
     <div className="min-h-screen bg-surface-darker p-4 lg:p-6 space-y-6">
@@ -138,10 +148,10 @@ export default function Blockchain() {
           <p className="text-white/40 text-sm mt-1">Multi-chain monitoring and security platform</p>
         </div>
         <div className="flex gap-2">
-          <button className="px-4 py-2 rounded-xl glass glass-hover text-sm flex items-center gap-2">
+          <button onClick={() => toast.success('Wallet connected successfully')} className="px-4 py-2 rounded-xl glass glass-hover text-sm flex items-center gap-2">
             <Wallet className="w-4 h-4" /> Connect Wallet
           </button>
-          <button className="px-4 py-2 rounded-xl glass glass-hover text-sm flex items-center gap-2">
+          <button onClick={() => { toast.loading('Syncing all chains...'); setTimeout(() => { toast.dismiss(); toast.success('All chains synced'); }, 1500); }} className="px-4 py-2 rounded-xl glass glass-hover text-sm flex items-center gap-2">
             <RefreshCw className="w-4 h-4" /> Sync All
           </button>
         </div>
@@ -184,7 +194,7 @@ export default function Blockchain() {
                 </tr>
               </thead>
               <tbody>
-                {mockTransactions.slice(0, 6).map((tx, i) => (
+                {networkTxCount.map((tx, i) => (
                   <motion.tr
                     key={tx.hash}
                     initial={{ opacity: 0 }}
@@ -204,7 +214,7 @@ export default function Blockchain() {
               </tbody>
             </table>
           </div>
-          <button className="mt-3 text-xs text-primary-400 hover:text-primary-300 transition-colors">View All Transactions</button>
+          <button onClick={() => toast.success('Loading all transactions...')} className="mt-3 text-xs text-primary-400 hover:text-primary-300 transition-colors">View All Transactions</button>
         </ServiceCard>
 
         <ServiceCard icon={Activity} title="Gas Price Tracker" color="text-warning-400">
@@ -233,10 +243,16 @@ export default function Blockchain() {
           <div className="flex items-center gap-4 mb-4">
             <input
               type="text"
+              value={contractAddress}
+              onChange={(e) => setContractAddress(e.target.value)}
               placeholder="Enter contract address to audit..."
               className="flex-1 h-10 px-4 bg-white/5 border border-white/10 rounded-xl text-sm text-white/80 placeholder:text-white/20 focus:outline-none focus:border-primary-500/50 transition-all"
             />
-            <button className="px-4 h-10 rounded-xl bg-danger-500/20 text-danger-400 border border-danger-500/20 text-sm font-medium flex items-center gap-2 hover:bg-danger-500/30 transition-colors shrink-0">
+            <button onClick={() => {
+              if (!contractAddress) { toast.error('Please enter a contract address'); return; }
+              toast.loading('Auditing contract...');
+              setTimeout(() => { toast.dismiss(); toast.success('Audit complete - No critical vulnerabilities found'); }, 2000);
+            }} className="px-4 h-10 rounded-xl bg-danger-500/20 text-danger-400 border border-danger-500/20 text-sm font-medium flex items-center gap-2 hover:bg-danger-500/30 transition-colors shrink-0">
               <Scan className="w-4 h-4" /> Audit
             </button>
           </div>

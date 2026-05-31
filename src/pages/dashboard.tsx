@@ -217,17 +217,17 @@ export default function Dashboard() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <button className="relative p-2 rounded-xl glass glass-hover">
+            <button onClick={() => toast.success('No new notifications')} className="relative p-2 rounded-xl glass glass-hover">
               <Bell className="w-4 h-4" />
               <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-danger-500 animate-ping" />
               <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-danger-500" />
             </button>
-            <button className="flex items-center gap-2 px-4 py-2 rounded-xl glass glass-hover text-sm group">
+            <button onClick={() => toast.success(`Wallet: ${user?.username || 'User'}`)} className="flex items-center gap-2 px-4 py-2 rounded-xl glass glass-hover text-sm group">
               <Wallet className="w-4 h-4 text-accent-400 group-hover:scale-110 transition-transform" />
               <span className="text-white/70">{user?.username || 'User'}</span>
               <ChevronDown className="w-3 h-3 text-white/30" />
             </button>
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center text-xs font-bold">
+            <div onClick={() => toast.success(`Logged in as ${user?.username || 'User'}`)} className="w-8 h-8 rounded-xl bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center text-xs font-bold cursor-pointer">
               {user?.username?.charAt(0).toUpperCase() || 'U'}
             </div>
           </div>
@@ -243,7 +243,7 @@ export default function Dashboard() {
               <button onClick={() => exportCSV(displayAlerts, 'dashboard-alerts')} className="p-2 rounded-xl glass glass-hover" title="Export CSV">
                 <Download className="w-4 h-4" />
               </button>
-              <button className={`p-2 rounded-xl glass glass-hover ${ws.isConnected ? 'text-accent-400' : 'text-white/30'}`} title={ws.isConnected ? 'Connected' : 'Disconnected'}>
+              <button onClick={() => toast.success(ws.isConnected ? 'WebSocket Connected' : 'WebSocket Disconnected')} className={`p-2 rounded-xl glass glass-hover ${ws.isConnected ? 'text-accent-400' : 'text-white/30'}`} title={ws.isConnected ? 'Connected' : 'Disconnected'}>
                 <span className={`w-2 h-2 rounded-full ${ws.isConnected ? 'bg-accent-400 animate-pulse' : 'bg-danger-400'} inline-block`} />
               </button>
             </div>
@@ -352,7 +352,7 @@ export default function Dashboard() {
                 <h3 className="font-semibold text-sm flex items-center gap-2">
                   <PieChart className="w-4 h-4 text-secondary-400" /> Threat Categories
                 </h3>
-                <button className="text-xs text-white/30 hover:text-white/60 transition-colors">View All</button>
+                <button onClick={() => router.push('/threat-intelligence')} className="text-xs text-white/30 hover:text-white/60 transition-colors">View All</button>
               </div>
               <div className="flex items-center gap-6">
                 <div className="w-[180px] h-[180px] shrink-0">

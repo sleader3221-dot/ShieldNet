@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import { motion } from 'framer-motion';
 import {
@@ -111,17 +111,29 @@ const GlassCard = ({ children, className = '' }: { children: React.ReactNode; cl
   </motion.div>
 );
 
-const SectionHeader = ({ icon: Icon, title, action, color = 'text-primary-400' }: { icon: LucideIcon; title: string; action?: string; color?: string }) => (
+const SectionHeader = ({ icon: Icon, title, action, onAction, color = 'text-primary-400' }: { icon: LucideIcon; title: string; action?: string; onAction?: () => void; color?: string }) => (
   <div className="flex items-center justify-between mb-4">
     <h3 className="font-semibold text-sm flex items-center gap-2">
       <Icon className={`w-4 h-4 ${color}`} /> {title}
     </h3>
-    {action && <button className="text-xs text-primary-400 hover:text-primary-300 transition-colors">{action}</button>}
+    {action && <button onClick={onAction} className="text-xs text-primary-400 hover:text-primary-300 transition-colors">{action}</button>}
   </div>
 );
 
 export default function Fintech() {
   useAuthGuard();
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const regeneratedPaymentHistory = useMemo(() => Array.from({ length: 10 }, (_, i) => ({
+    id: `PAY-${String(1000 + i)}`,
+    amount: (Math.random() * 50000 + 100).toFixed(2),
+    currency: ['USDC', 'DAI', 'ETH', 'USDT'][Math.floor(Math.random() * 4)]!,
+    status: ['Completed', 'Pending', 'Failed', 'Completed', 'Completed'][Math.floor(Math.random() * 5)]!,
+    merchant: ['Binance', 'Coinbase', 'Uniswap', 'Aave', 'Compound', 'Curve'][Math.floor(Math.random() * 6)]!,
+    date: new Date(Date.now() - Math.random() * 86400000 * 7).toISOString(),
+    type: ['Deposit', 'Withdrawal', 'Swap', 'Payment', 'Transfer'][Math.floor(Math.random() * 5)]!,
+  })), [refreshKey]);
+
   return (
     <div className="min-h-screen bg-surface-darker p-4 lg:p-6 space-y-6">
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-wrap items-center justify-between gap-4">
@@ -133,10 +145,18 @@ export default function Fintech() {
           <p className="text-white/40 text-sm mt-1">Portfolio risk management and financial security</p>
         </div>
         <div className="flex gap-2">
-          <button className="px-4 py-2 rounded-xl glass glass-hover text-sm flex items-center gap-2">
+          <button onClick={() => {
+  const csv = [['Asset', 'Balance', 'Value', 'Change'].join(',')];
+  portfolioAssets.forEach(a => csv.push(`"${a.name}","${a.balance}","${a.usdValue}","${a.change}"`));
+  const blob = new Blob([csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'portfolio-export.csv'; a.click();
+  URL.revokeObjectURL(url);
+  toast.success('Portfolio exported');
+}} className="px-4 py-2 rounded-xl glass glass-hover text-sm flex items-center gap-2">
             <Download className="w-4 h-4" /> Export
           </button>
-          <button className="px-4 py-2 rounded-xl glass glass-hover text-sm flex items-center gap-2">
+          <button onClick={() => { setRefreshKey(k => k + 1); toast.success('Data refreshed'); }} className="px-4 py-2 rounded-xl glass glass-hover text-sm flex items-center gap-2">
             <RefreshCw className="w-4 h-4" /> Refresh
           </button>
         </div>
@@ -144,7 +164,7 @@ export default function Fintech() {
 
       <div className="grid lg:grid-cols-2 gap-6">
         <GlassCard>
-          <SectionHeader icon={Wallet} title="Portfolio Overview" action="View All" />
+          <SectionHeader icon={Wallet} title="Portfolio Overview" action="View All" onAction={() => toast.success('Loading all assets...')} />
           <div className="space-y-2">
             {portfolioAssets.map((asset) => (
               <div key={asset.name} className="flex items-center justify-between py-2.5 border-b border-white/5 last:border-0 group">
@@ -235,7 +255,7 @@ export default function Fintech() {
 
       <div className="grid lg:grid-cols-3 gap-6">
         <GlassCard>
-          <SectionHeader icon={Shield} title="Insurance Policies" action="View All" color="text-accent-400" />
+          <SectionHeader icon={Shield} title="Insurance Policies" action="View All" onAction={() => toast.success('Loading all policies...')} color="text-accent-400" />
           <div className="space-y-2">
             {insurancePolicies.map((pol) => (
               <div key={pol.id} className="glass rounded-xl p-3 text-xs group hover:border-primary-500/20 transition-all">
@@ -303,7 +323,16 @@ export default function Fintech() {
 
       <div className="grid lg:grid-cols-3 gap-6">
         <GlassCard className="lg:col-span-2">
-          <SectionHeader icon={Receipt} title="Transaction History" action="Export" />
+          <SectionHeader icon={Receipt} title="Transaction History" action="Export" onAction={() => {
+  if (!regeneratedPaymentHistory.length) { toast.error('No data to export'); return; }
+  const keys = Object.keys(regeneratedPaymentHistory[0]!);
+  const csv = [keys.join(','), ...regeneratedPaymentHistory.map(row => keys.map(k => `"${String(row[k as keyof typeof row] || '')}"`).join(','))].join('\n');
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a'); a.href = url; a.download = 'transactions.csv'; a.click();
+  URL.revokeObjectURL(url);
+  toast.success('Transactions exported');
+}} />
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
@@ -314,7 +343,7 @@ export default function Fintech() {
                 </tr>
               </thead>
               <tbody>
-                {paymentHistory.map((pay, i) => (
+                {regeneratedPaymentHistory.map((pay, i) => (
                   <motion.tr
                     key={pay.id}
                     initial={{ opacity: 0 }}

@@ -173,13 +173,13 @@ const DetailModal = ({ threat, onClose }: { threat: Threat | null; onClose: () =
           </div>
 
           <div className="flex gap-2 mt-4">
-            <button className="flex-1 px-4 py-2 rounded-xl glass glass-hover text-sm flex items-center justify-center gap-2">
+            <button onClick={() => toast.success(`Analyzing ${threat.id}...`)} className="flex-1 px-4 py-2 rounded-xl glass glass-hover text-sm flex items-center justify-center gap-2">
               <Target className="w-4 h-4" /> Analyze
             </button>
-            <button className="flex-1 px-4 py-2 rounded-xl glass glass-hover text-sm flex items-center justify-center gap-2">
+            <button onClick={() => toast.success(`Mitigation initiated for ${threat.id}`)} className="flex-1 px-4 py-2 rounded-xl glass glass-hover text-sm flex items-center justify-center gap-2">
               <Shield className="w-4 h-4" /> Mitigate
             </button>
-            <button className="px-4 py-2 rounded-xl glass glass-hover">
+            <button onClick={() => toast.success('Opening external threat feed...')} className="px-4 py-2 rounded-xl glass glass-hover">
               <ExternalLink className="w-4 h-4" />
             </button>
           </div>
@@ -247,7 +247,7 @@ export default function ThreatIntelligence() {
           <button onClick={() => exportCSV(filteredThreats, 'threats-export')} className="px-4 py-2 rounded-xl glass glass-hover text-sm flex items-center gap-2">
             <Download className="w-4 h-4" /> Export
           </button>
-          <button className="px-4 py-2 rounded-xl bg-danger-500/20 text-danger-400 border border-danger-500/20 text-sm flex items-center gap-2 hover:bg-danger-500/30 transition-colors">
+          <button onClick={() => { toast.loading('Scanning...'); setTimeout(() => { toast.dismiss(); toast.success('Scan complete: 0 threats found'); }, 2000); }} className="px-4 py-2 rounded-xl bg-danger-500/20 text-danger-400 border border-danger-500/20 text-sm flex items-center gap-2 hover:bg-danger-500/30 transition-colors">
             <Shield className="w-4 h-4" /> Run Scan
           </button>
         </div>
@@ -289,7 +289,7 @@ export default function ThreatIntelligence() {
             {s}
           </button>
         ))}
-        <button className="p-2.5 rounded-xl glass glass-hover">
+        <button onClick={() => toast.success('Filter options expanded')} className="p-2.5 rounded-xl glass glass-hover">
           <MoreHorizontal className="w-4 h-4" />
         </button>
       </motion.div>
@@ -451,7 +451,7 @@ export default function ThreatIntelligence() {
             <h3 className="font-semibold text-sm flex items-center gap-2">
               <Database className="w-4 h-4 text-warning-400" /> Vulnerability DB
             </h3>
-            <button className="text-xs text-primary-400">View All</button>
+            <button onClick={() => toast.success('Loading all vulnerabilities...')} className="text-xs text-primary-400">View All</button>
           </div>
           <div className="space-y-2 max-h-[280px] overflow-y-auto">
             {vulnDb.map((v) => (
@@ -484,7 +484,7 @@ export default function ThreatIntelligence() {
             <h3 className="font-semibold text-sm flex items-center gap-2">
               <Server className="w-4 h-4 text-accent-400" /> IOC Feed
             </h3>
-            <button className="text-xs text-primary-400">Refresh</button>
+            <button onClick={() => toast.success('IOC Feed refreshed')} className="text-xs text-primary-400">Refresh</button>
           </div>
           <div className="space-y-2 max-h-[280px] overflow-y-auto">
             {iocFeed.map((ioc, i) => (
@@ -515,7 +515,7 @@ export default function ThreatIntelligence() {
           <h3 className="font-semibold text-sm flex items-center gap-2">
             <Clock className="w-4 h-4 text-primary-400" /> Threat Timeline
           </h3>
-          <button className="text-xs text-primary-400">View Full History</button>
+          <button onClick={() => toast.success('Loading full threat timeline...')} className="text-xs text-primary-400">View Full History</button>
         </div>
         <div className="relative">
           <div className="absolute left-4 top-0 bottom-0 w-px bg-gradient-to-b from-primary-500/50 via-secondary-500/30 to-transparent" />

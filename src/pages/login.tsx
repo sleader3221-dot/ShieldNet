@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Hexagon, Shield, Eye, EyeOff, AlertCircle, CheckCircle, ArrowRight, Sparkles, Loader } from 'lucide-react';
+import { ArrowLeft, Hexagon, Shield, Eye, EyeOff, AlertCircle, CheckCircle, ArrowRight, Sparkles, Loader } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -118,6 +118,9 @@ export default function LoginPage() {
             <span className="text-2xl font-bold gradient-text">ShieldNet</span>
           </div>
 
+          <button onClick={() => router.push('/')} className="text-xs text-white/30 hover:text-white/60 transition-colors mb-4 flex items-center gap-1">
+            <ArrowLeft className="w-3 h-3" /> Back to Home
+          </button>
           <h2 className="text-3xl font-bold text-white mb-2">
             {isRegister ? 'Create Account' : 'Welcome Back'}
           </h2>

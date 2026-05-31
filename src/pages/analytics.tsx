@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import {
   BarChart3, TrendingUp, TrendingDown, Activity, Shield,
@@ -17,30 +17,48 @@ import {
   CartesianGrid, Legend, RadialBarChart, RadialBar, Cell
 } from 'recharts';
 
-const threatTrendData = Array.from({ length: 30 }, (_, i) => ({
-  date: new Date(Date.now() - (29 - i) * 86400000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+const dataPointCount = (period: string): number => {
+  switch (period) {
+    case '7d': return 7;
+    case '30d': return 30;
+    case '90d': return 90;
+    case '1y': return 365;
+    default: return 30;
+  }
+};
+
+const generateThreatTrendData = (days: number) => Array.from({ length: days }, (_, i) => ({
+  date: new Date(Date.now() - (days - 1 - i) * 86400000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
   threats: Math.floor(Math.random() * 80 + 20 + Math.sin(i * 0.3) * 30),
   blocked: Math.floor(Math.random() * 75 + 18 + Math.sin(i * 0.3 + 0.5) * 28),
   predicted: Math.floor(Math.random() * 85 + 22 + Math.sin(i * 0.3 + 1) * 32),
 }));
 
-const securityScoreData = Array.from({ length: 12 }, (_, i) => ({
-  month: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][i]!,
-  score: Math.floor(Math.random() * 15 + 70 + Math.sin(i * 0.5) * 8),
-  baseline: 85,
-}));
+const generateSecurityScoreData = (days: number) => {
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const count = Math.min(days, 12);
+  return Array.from({ length: count }, (_, i) => ({
+    month: days <= 30 ? `W${i + 1}` : months[i % 12],
+    score: Math.floor(Math.random() * 15 + 70 + Math.sin(i * 0.5) * 8),
+    baseline: 85,
+  }));
+};
 
-const networkPatternData = Array.from({ length: 24 }, (_, i) => ({
+const generateNetworkPatternData = (days: number) => Array.from({ length: 24 }, (_, i) => ({
   hour: `${i}:00`,
   normal: Math.floor(Math.random() * 800 + 200 + Math.sin(i * 0.4) * 200),
   anomalous: Math.floor(Math.random() * 30 + 5 + Math.abs(Math.sin(i * 0.7)) * 20),
 }));
 
-const userBehaviorData = Array.from({ length: 7 }, (_, i) => ({
-  day: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][i]!,
-  active: Math.floor(Math.random() * 5000 + 2000 + Math.sin(i * 0.3) * 1000),
-  suspicious: Math.floor(Math.random() * 50 + 5 + Math.abs(Math.sin(i * 1.2)) * 30),
-}));
+const generateUserBehaviorData = (days: number) => {
+  const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+  const count = Math.min(days, 7);
+  return Array.from({ length: count }, (_, i) => ({
+    day: days <= 7 ? weekDays[i] : `Day ${i + 1}`,
+    active: Math.floor(Math.random() * 5000 + 2000 + Math.sin(i * 0.3) * 1000),
+    suspicious: Math.floor(Math.random() * 50 + 5 + Math.abs(Math.sin(i * 1.2)) * 30),
+  }));
+};
 
 const costAnalysisData = [
   { name: 'Manual Security', cost: 480000, color: '#ef4444' },
@@ -72,12 +90,12 @@ const streamingMetrics = [
   { label: 'Model Updates', value: '3.2 min', status: 'Synced', color: 'text-accent-400' },
 ];
 
-const SectionHeader = ({ icon: Icon, title, action, color = 'text-primary-400' }: { icon: LucideIcon; title: string; action?: string; color?: string }) => (
+const SectionHeader = ({ icon: Icon, title, action, onAction, color = 'text-primary-400' }: { icon: LucideIcon; title: string; action?: string; onAction?: () => void; color?: string }) => (
   <div className="flex items-center justify-between mb-4">
     <h3 className="font-semibold text-sm flex items-center gap-2">
       <Icon className={`w-4 h-4 ${color}`} /> {title}
     </h3>
-    {action && <button className="text-xs text-primary-400 hover:text-primary-300 transition-colors">{action}</button>}
+    {action && <button onClick={onAction} className="text-xs text-primary-400 hover:text-primary-300 transition-colors">{action}</button>}
   </div>
 );
 
@@ -109,6 +127,12 @@ export default function Analytics() {
   const [selectedPeriod, setSelectedPeriod] = useState('30d');
   const [predictions, setPredictions] = useState<any[]>([]);
 
+  const nPoints = dataPointCount(selectedPeriod);
+  const threatTrendData = useMemo(() => generateThreatTrendData(nPoints), [nPoints]);
+  const securityScoreData = useMemo(() => generateSecurityScoreData(nPoints), [nPoints]);
+  const networkPatternData = useMemo(() => generateNetworkPatternData(nPoints), [nPoints]);
+  const userBehaviorData = useMemo(() => generateUserBehaviorData(nPoints), [nPoints]);
+
   useEffect(() => {
     apiClient.get<any>('/analytics/predictions')
       .then((res) => { if (Array.isArray(res.data)) setPredictions(res.data); })
@@ -139,7 +163,7 @@ export default function Analytics() {
               </button>
             ))}
           </div>
-          <button className="p-2 rounded-xl glass glass-hover">
+          <button onClick={() => toast.success('Calendar opened')} className="p-2 rounded-xl glass glass-hover">
             <Calendar className="w-4 h-4" />
           </button>
           <button onClick={() => exportCSV(threatTrendData, 'analytics-threat-trend')} className="px-4 py-2 rounded-xl bg-secondary-500/20 text-secondary-400 border border-secondary-500/20 text-sm flex items-center gap-2 hover:bg-secondary-500/30 transition-colors">
@@ -169,7 +193,7 @@ export default function Analytics() {
 
       <div className="grid lg:grid-cols-2 gap-6">
         <GlassCard>
-          <SectionHeader icon={Activity} title="Threat Trend Analysis" action="View Full Report" color="text-danger-400" />
+          <SectionHeader icon={Activity} title="Threat Trend Analysis" action="View Full Report" onAction={() => toast.success('Opening full report...')} color="text-danger-400" />
           <div className="h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
               <ComposedChart data={threatTrendData.slice(-14)}>
@@ -350,7 +374,7 @@ export default function Analytics() {
         </GlassCard>
 
         <GlassCard>
-          <SectionHeader icon={FileText} title="Report Builder" action="Create Report" color="text-primary-400" />
+          <SectionHeader icon={FileText} title="Report Builder" action="Create Report" onAction={() => toast.success('Creating new report...')} color="text-primary-400" />
           <div className="space-y-2">
             {reportTemplates.map((report, i) => {
               const Icon = report.icon;
@@ -373,7 +397,7 @@ export default function Analytics() {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] text-white/20">Updated {report.lastGen}</span>
-                    <button className="p-1.5 rounded-lg hover:bg-white/5 transition-colors">
+                    <button onClick={() => toast.success(`Downloading ${report.name}...`)} className="p-1.5 rounded-lg hover:bg-white/5 transition-colors">
                       <Download className="w-3.5 h-3.5 text-white/30" />
                     </button>
                   </div>
@@ -384,7 +408,7 @@ export default function Analytics() {
           <div className="mt-4 p-4 glass rounded-xl border border-dashed border-white/10 text-center">
             <Sparkles className="w-5 h-5 mx-auto mb-2 text-primary-400" />
             <div className="text-sm text-white/50">Generate custom reports with AI</div>
-            <button className="mt-2 px-4 py-2 rounded-lg bg-primary-500/20 text-primary-400 border border-primary-500/20 text-xs font-medium hover:bg-primary-500/30 transition-colors">
+            <button onClick={() => toast.success('Opening report builder...')} className="mt-2 px-4 py-2 rounded-lg bg-primary-500/20 text-primary-400 border border-primary-500/20 text-xs font-medium hover:bg-primary-500/30 transition-colors">
               Build Report
             </button>
           </div>
